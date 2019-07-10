@@ -24,9 +24,9 @@ npm -g install phantomjs
 
 For a simple demo try:
 ```
-python snapper.py -l "google.com, gmail.google.com, ads.google.com" -c 3 -v
+python snapper.py -l "google.com, gmail.google.com, ads.google.com" -c 3 -v -p 8000
 ```
-This kicks off 3 processes, each of which fetch screenshots of the http and https versions of the hosts in question. The output is served up via localhost:8000 and can be seen below
+This kicks off 3 processes, each of which fetch screenshots of the http and https versions of the hosts in question. The output is served up via the given port, http://127.0.0.1:8000 by default
 ![output results](http://i.imgur.com/OlvyIBp.png)
 
 You can also read from a file, these results where generated from a [fierce](https://github.com/mschwager/fierce) enumeration:
