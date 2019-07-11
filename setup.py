@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import os
 import os.path
-
 from setuptools import find_packages
 from setuptools import setup
 
@@ -24,14 +22,14 @@ if __name__ == "__main__":
         description='snapper tool using selenium',
         packages=find_packages(),
         install_requires=find_requires(),
-        data_files=[(
-            'snapper',
-            ['snapper/config.yaml']
-        )],
+        # data_files=[(
+        #    'snapper',
+        #    ['snapper/config.yaml']
+        # )],
         include_package_data=True,
         entry_points={
             'console_scripts': [
-                'snapper = snapper.cli:main',
+                'snap = snapper.cli:main',
             ],
         },
     )

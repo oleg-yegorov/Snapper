@@ -24,7 +24,7 @@ except ImportError:
     import http.server as SimpleHTTPServer
 
 env = Environment(autoescape=True,
-                  loader=PackageLoader('snapper', 'templates'))
+                  loader=PackageLoader('cli', 'templates'))
 
 
 def save_image(uri, file_name, driver):
@@ -164,23 +164,24 @@ def capture_snaps(hosts, outpath, timeout=10, serve=False, port=8000,
     else:
         return True
 
-# if we are going to use yaml file
-def build_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-c', '--config', dest='config', action='store', type=str,
-        help='path to custom config',
-        default=os.path.join(os.path.dirname(__file__), "config.yaml")
-    )
-    return parser
+# ## if we are going to use yaml file
+#def build_parser():
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument(
+       # '-c', '--config', dest='config', action='store', type=str,
+        #help='path to custom config',
+        #default=os.path.join(os.path.dirname(__file__), "config.yaml")
+    #)
+    #return parser
 
 
 # --------------------------MAIN------------------------- #
 if __name__ == "__main__":
-    # if we are going to use yaml file
-    parser = build_parser()
-    params, other_params = parser.parse_known_args()
-    conf = load_config(params.config)
+    # ## if we are going to use yaml file
+    # parser = build_parser()
+    #params, other_params = parser.parse_known_args()
+    #conf = load_config(params.config)
+    
 
     parser = OptionParser()
     parser.add_option("-f", "--file", action="store", dest="filename",
