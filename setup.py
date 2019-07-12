@@ -5,7 +5,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 name = 'snapper'
-version = '0.0.1'
+version = '0.0.5'
 
 
 def find_requires():
@@ -22,10 +22,12 @@ if __name__ == "__main__":
         description='snapper tool using selenium',
         packages=find_packages(),
         install_requires=find_requires(),
-        # data_files=[(
-        #    'snapper',
-        #    ['snapper/config.yaml']
-        # )],
+        #add yaml part if  necessary
+        #    
+        data_files=[(
+            'snapper',
+            ['snapper/config.yaml']
+        )],
         include_package_data=True,
         entry_points={
             'console_scripts': [

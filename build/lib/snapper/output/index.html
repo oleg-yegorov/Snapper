@@ -1,0 +1,68 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="css/materialize.min.css">
+        <script src="js/jquery.min.js"></script>
+        <script src="js/materialize.min.js"></script>            
+    </head>
+
+    <body>
+        
+            <div class="row">
+                
+                    <div class="col l2 m4 s6">
+                        <img style="cursor: pointer; padding: 25px; width:95%; border:1px solid #021a40;" onclick="updateModel('images/d1daab00-2de3-4c1e-a0bf-27b0ee21168f.png', 'http://google.com')" src="images/d1daab00-2de3-4c1e-a0bf-27b0ee21168f.png"/>
+                        <a style="white-space: nowrap; overflow: hidden; display: block; text-overflow: ellipsis;" src="http://google.com">http://google.com</a>
+                    </div>
+                
+                    <div class="col l2 m4 s6">
+                        <img style="cursor: pointer; padding: 25px; width:95%; border:1px solid #021a40;" onclick="updateModel('images/1fdf7701-2dc4-423d-9eb8-698d566bb11a.png', 'https://google.com')" src="images/1fdf7701-2dc4-423d-9eb8-698d566bb11a.png"/>
+                        <a style="white-space: nowrap; overflow: hidden; display: block; text-overflow: ellipsis;" src="https://google.com">https://google.com</a>
+                    </div>
+                
+                    <div class="col l2 m4 s6">
+                        <img style="cursor: pointer; padding: 25px; width:95%; border:1px solid #021a40;" onclick="updateModel('images/b15a5275-06e5-484d-80eb-73d43b28ca37.png', 'http://gmail.google.com')" src="images/b15a5275-06e5-484d-80eb-73d43b28ca37.png"/>
+                        <a style="white-space: nowrap; overflow: hidden; display: block; text-overflow: ellipsis;" src="http://gmail.google.com">http://gmail.google.com</a>
+                    </div>
+                
+                    <div class="col l2 m4 s6">
+                        <img style="cursor: pointer; padding: 25px; width:95%; border:1px solid #021a40;" onclick="updateModel('images/52fb5a9f-8a37-49d0-84b7-f5e0b7b2325a.png', 'http://ads.google.com')" src="images/52fb5a9f-8a37-49d0-84b7-f5e0b7b2325a.png"/>
+                        <a style="white-space: nowrap; overflow: hidden; display: block; text-overflow: ellipsis;" src="http://ads.google.com">http://ads.google.com</a>
+                    </div>
+                
+                    <div class="col l2 m4 s6">
+                        <img style="cursor: pointer; padding: 25px; width:95%; border:1px solid #021a40;" onclick="updateModel('images/ee625be7-28f7-48e6-b170-16eaffb9251b.png', 'https://gmail.google.com')" src="images/ee625be7-28f7-48e6-b170-16eaffb9251b.png"/>
+                        <a style="white-space: nowrap; overflow: hidden; display: block; text-overflow: ellipsis;" src="https://gmail.google.com">https://gmail.google.com</a>
+                    </div>
+                
+                    <div class="col l2 m4 s6">
+                        <img style="cursor: pointer; padding: 25px; width:95%; border:1px solid #021a40;" onclick="updateModel('images/ff9eac06-f61d-4bf6-ab26-ecddf4283581.png', 'https://ads.google.com')" src="images/ff9eac06-f61d-4bf6-ab26-ecddf4283581.png"/>
+                        <a style="white-space: nowrap; overflow: hidden; display: block; text-overflow: ellipsis;" src="https://ads.google.com">https://ads.google.com</a>
+                    </div>
+                
+            </div>
+        
+        
+        <!-- Modal Trigger -->
+        <div id="modal1" class="modal modal-fixed-footer">
+            <div class="modal-content">
+                <div id="modalImage"></div>
+            </div>
+            <div class="modal-footer">
+                <p id="modalHost"></p>
+            </div>
+        </div>
+
+        <script>
+            var updateModel = function(fileName, host){
+                document.getElementById("modalImage").innerHTML = "<img src=\"" + fileName + "\" style=\"width:100%;\"/>";
+                document.getElementById("modalHost").innerHTML = "<a src=\"" + host + "\">" + host + "</a>";
+                $('#modal1').openModal();
+            }
+            $(document).ready(function(){
+                $('.modal-trigger').leanModal();
+            });
+        </script> 
+
+    </body>
+
+</html>

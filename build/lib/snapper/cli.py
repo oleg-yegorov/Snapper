@@ -24,7 +24,8 @@ except ImportError:
     import http.server as SimpleHTTPServer
 
 env = Environment(autoescape=True,
-                  loader=PackageLoader('cli', 'templates'))
+                  loader=PackageLoader('snapper', 'templates'))
+PORT = 8000
 
 
 def save_image(uri, file_name, driver):
@@ -159,7 +160,7 @@ def capture_snaps(hosts, outpath, timeout=10, serve=False, port=8000,
         chdir("output")
         Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
         httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
-        print("Serving at port", PORT)
+        print("Serving at port ", PORT)
         httpd.serve_forever()
     else:
         return True
@@ -176,7 +177,8 @@ def capture_snaps(hosts, outpath, timeout=10, serve=False, port=8000,
 
 
 # --------------------------MAIN------------------------- #
-if __name__ == "__main__":
+def main():
+#if __name__ == "__main__":
     # ## if we are going to use yaml file
     # parser = build_parser()
     #params, other_params = parser.parse_known_args()
