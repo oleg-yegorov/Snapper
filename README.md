@@ -3,16 +3,12 @@ A security tool for grabbing screenshots of many web hosts. This tool is useful 
 
 A sample output can be seen here: [https://security.love/Snapper/output](https://security.love/Snapper/output)
 
-## How to install
+## How to install 
 
-- Clone snapper
-```bash
-git clone https://github.com/dxa4481/snapper
-```
 
-- Install python dependencies
+- Pypl package
 ```bash
-pip install -r requirements.txt
+pip install -i  https://test.pypi.org/simple/ snapper
 ```
 
 - Install phantomJS (you need to have [npm installed](https://nodejs.org/en/download/package-manager/))
@@ -24,7 +20,7 @@ npm -g install phantomjs
 
 For a simple demo try:
 ```
-python snapper.py -l "google.com, gmail.google.com,ads.google.com" -c 3 -v -p 8000
+snap -l "google.com, gmail.google.com,ads.google.com" -c 3 -p 8000
 ```
 This kicks off 3 processes, each of which fetch screenshots of the http and https versions of the hosts in question. The output is served up via the given port, http://127.0.0.1:8000 by default
 ![output results](http://i.imgur.com/OlvyIBp.png)

@@ -5,11 +5,17 @@ from setuptools import find_packages
 from setuptools import setup
 
 name = 'snapper'
-version = '0.0.5'
+version = '0.0.7'
 
-
+def find_description():
+    this_directory = os.path.abspath(os.path.dirname(__file__))
+    long_description = None
+    with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+        long_description = f.read()
+    return long_description
 def find_requires():
     dir_path = os.path.dirname(os.path.realpath(__file__))
+    requirenments = None
     with open('{0}/requirements.txt'.format(dir_path), 'r') as reqs:
         requirements = reqs.readlines()
     return requirements
@@ -22,8 +28,9 @@ if __name__ == "__main__":
         description='snapper tool using selenium',
         packages=find_packages(),
         install_requires=find_requires(),
+        long_description=find_description(),
+        long_description_content_type='text/markdown',
         #add yaml part if  necessary
-        #    
         data_files=[(
             'snapper',
             ['snapper/config.yaml']
