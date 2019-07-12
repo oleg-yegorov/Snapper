@@ -32,4 +32,9 @@ if __name__ == "__main__":
                 'snap = snapper.cli:main',
             ],
         },
+        classifiers=[
+            "Programming Language :: Python :: 3",
+            "License :: OSI Approved :: MIT License",
+            "Operating System :: OS Independent",
+        ],
     )
