@@ -27,7 +27,7 @@ This kicks off 3 processes, each of which fetch screenshots of the http and http
 
 You can also read from a file, these results where generated from a [fierce](https://github.com/mschwager/fierce) enumeration:
 ```
-python snapper.py -f googleExample.txt -c 10 -v
+snap -f googleExample.txt -c 10 -v
 ```
 You can view the results [here](https://security.love/Snapper/output). Note in addition to the server, the static files are available in your current working directory as "output"
 
@@ -35,7 +35,7 @@ You can view the results [here](https://security.love/Snapper/output). Note in a
 ## More options
 
 ```bash
-python snapper.py --help
+snap --help
 ```
 
 ```
