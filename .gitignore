@@ -2,7 +2,7 @@
 .DS_Store
 
 # Specific to this project, output folder isn't necessary
-.output/
+snapper/output
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
