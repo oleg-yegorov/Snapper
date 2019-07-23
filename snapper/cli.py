@@ -190,7 +190,7 @@ if __name__ == "__main__":
                       help='Display console output for fetching each host')
     args = parser.parse_args()
     if args.filename:
-        with open(options.filename, 'r') as inputFile:
+        with open(args.filename, 'r') as inputFile:
             hosts = inputFile.readlines()
             hosts = map(lambda s: s.strip(), hosts)
     elif args.list:
