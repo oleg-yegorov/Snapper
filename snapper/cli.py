@@ -2,10 +2,11 @@ import sys
 import os
 import webbrowser
 import os.path
+import yaml
 from jinja2 import Environment, PackageLoader
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from optparse import OptionParser
+from argparse import ArgumentParser
 from multiprocessing import Process, Queue
 from os import chdir
 from shutil import copyfile
@@ -24,7 +25,7 @@ except ImportError:
 
 env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
-PORT = 8000
+config = yaml.safe_load(open('config.yaml'))
 
 
 def save_image(uri, file_name, driver):
@@ -90,10 +91,9 @@ def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose):
                     print("%s is unreachable or timed out" % host)
 
 
-def capture_snaps(hosts, outpath, timeout=10, serve=False, port=8000,
-                  verbose=True, numWorkers=1, user_agent="Mozilla/5.0 \
-                  (Windows NT6.1) AppleWebKit/537.36 (KHTML,like Gecko) \
-                  Chrome/41.0.2228.0 Safari/537.36"):
+def capture_snaps(hosts, outpath, timeout, serve, port,
+                  verbose, numWorkers, user_agent):
+    ip = config["IP"]
     outpath = os.path.join(outpath, "output")
     cssOutputPath = os.path.join(outpath, "css")
     jsOutputPath = os.path.join(outpath, "js")
@@ -158,55 +158,55 @@ def capture_snaps(hosts, outpath, timeout=10, serve=False, port=8000,
     if serve:
         chdir("output")
         Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-        httpd = SocketServer.TCPServer(("127.0.0.1", PORT), Handler)
-        print("Serving at port ", PORT)
+        httpd = SocketServer.TCPServer((ip, port), Handler)
+        print("Serving at port", port)
         httpd.serve_forever()
     else:
         return True
 
 
 # --------------------------MAIN------------------------- #
-def main():
-    parser = OptionParser()
-    parser.add_option("-f", "--file", action="store", dest="filename",
+#def main():
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("-f", "--file", action="store", dest="filename",
                       help="Souce from input file", metavar="FILE")
-    parser.add_option("-l", "--list", action="store", dest="list",
+    parser.add_argument("-l", "--list", action="store", dest="list",
                       help="Source from commandline list")
-    parser.add_option("-u", '--user-agent', action='store',
+    parser.add_argument("-u", '--user-agent', action='store',
                       dest="user_agent", type=str,
-                      default="Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 \
-                      (KHTML,like Gecko) Chrome/41.0.2228.0 Safari/537.36",
+                      default=config["USER_AGENT"],
                       help='The user agent used for requests')
-    parser.add_option("-c", '--concurrency', action='store',
+    parser.add_argument("-c", '--concurrency', action='store',
                       dest="numWorkers", type=int, default=1,
                       help='Number of cuncurrent processes')
-    parser.add_option("-t", '--timeout', action='store',
+    parser.add_argument("-t", '--timeout', action='store',
                       dest="timeout", type=int, default=10,
                       help='Number of seconds to try to resolve')
-    parser.add_option("-p", '--port', action='store',
-                      dest="port", type=int, default=8000,
+    parser.add_argument("-p", '--port', action='store',
+                      dest="port", type=int, default=config["PORT"],
                       help='Port to run server on')
-    parser.add_option("-v", action='store_true', dest="verbose",
+    parser.add_argument("-v", action='store_true', dest="verbose",
                       help='Display console output for fetching each host')
-
-    (options, args) = parser.parse_args()
-    if options.filename:
+    args = parser.parse_args()
+    if args.filename:
         with open(options.filename, 'r') as inputFile:
             hosts = inputFile.readlines()
             hosts = map(lambda s: s.strip(), hosts)
-    elif options.list:
+    elif args.list:
         hosts = []
-        for item in options.list.split(","):
+        for item in args.list.split(","):
             hosts.append(item.strip())
     else:
         print("invalid args")
         sys.exit()
-    numWorkers = options.numWorkers
-    timeout = options.timeout
-    verbose = options.verbose
-    PORT = options.port
-    user_agent = options.user_agent
+    numWorkers = args.numWorkers
+    timeout = args.timeout
+    verbose = args.verbose
+    port = args.port
+    user_agent = args.user_agent
 
-    webbrowser.open_new_tab("http://127.0.0.1:%s/" % PORT)
-    capture_snaps(hosts, os.getcwd(), timeout, True, PORT, verbose,
+    # comment out webbrowser when done testing
+    webbrowser.open_new_tab("http://"+config["IP"]+":%s/" % port)
+    capture_snaps(hosts, os.getcwd(), timeout, True, port, verbose,
                   numWorkers, user_agent)
