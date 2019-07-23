@@ -207,6 +207,6 @@ if __name__ == "__main__":
     user_agent = args.user_agent
 
     # comment out webbrowser when done testing
-    webbrowser.open_new_tab("http://"+config["IP"]+":%s/" % port)
+    #webbrowser.open_new_tab("http://"+config["IP"]+":%s/" % port)
     capture_snaps(hosts, os.getcwd(), timeout, True, port, verbose,
                   numWorkers, user_agent)
