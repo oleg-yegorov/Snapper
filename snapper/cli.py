@@ -25,7 +25,9 @@ except ImportError:
 
 env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
-config = yaml.safe_load(open('config.yaml'))
+with open('config.yaml') as file:
+    config = yaml.safe_load(file)
+
 
 
 def save_image(uri, file_name, driver):
