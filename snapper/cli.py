@@ -18,7 +18,7 @@ from uuid import uuid4
 from selenium.common.exceptions import TimeoutException
 from flask import Flask, request, Response
 
-#disable warnings
+# disable warnings
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -32,9 +32,11 @@ try:
 except ImportError:
     import http.server as SimpleHTTPServer
 
-
-
-
+env = Environment(autoescape=True,
+                  loader=PackageLoader('snapper', 'templates'))
+with open('config.yaml') as file:
+    config = yaml.safe_load(file)
+OUTPUT_FILENAME = "snapper_output"
 app = Flask(__name__)
 TASKS = {}
 numWorkers = None
@@ -67,6 +69,7 @@ class Task(object):
             "result": self.result
         })
 
+
 @app.route('/api/v1/submit', methods=['POST'])
 def api_root():
     if "urls" not in request.json:
@@ -77,7 +80,6 @@ def api_root():
 
     new_task = Task(urls=request.json.get("urls"))
     TASKS[new_task.id] = new_task
-
 
     new_task.run()
 
@@ -113,13 +115,6 @@ def api_article(task_id):
         )
 
 
-env = Environment(autoescape=True,
-                  loader=PackageLoader('snapper', 'templates'))
-with open('config.yaml') as file:
-    config = yaml.safe_load(file)
-
-
-
 def save_image(uri, file_name, driver):
     try:
         driver.get(uri)
@@ -138,7 +133,7 @@ def host_reachable(host, timeout):
         return False
 
 
-def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose, outpath, task_id):
+def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose, outpath):
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = user_agent
     dcap["accept_untrusted_certs"] = True
@@ -186,7 +181,7 @@ def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose, outpath, tas
 def capture_snaps(hosts, outpath, timeout, serve, port,
                   verbose, numWorkers, user_agent, task_id, task):
     ip = config["IP"]
-    outpath = os.path.join(outpath, "output", task_id)
+    outpath = os.path.join(outpath, OUTPUT_FILENAME, task_id)
     task.delete_path = outpath
     print(task.delete_path)
     cssOutputPath = os.path.join(outpath, "css")
@@ -218,7 +213,7 @@ def capture_snaps(hosts, outpath, timeout, serve, port,
         hostQueue.put(host)
     for i in range(numWorkers):
         p = Process(target=host_worker, args=(hostQueue, fileQueue, timeout,
-                    user_agent, verbose, outpath, task_id))
+                    user_agent, verbose, outpath))
         workers.append(p)
         p.start()
     try:
@@ -249,6 +244,7 @@ def capture_snaps(hosts, outpath, timeout, serve, port,
     template = env.get_template('index.html')
     with open(os.path.join(outpath, "index.html"), "w") as outputFile:
         outputFile.write(template.render(setsOfSix=setsOfSix))
+    task.result = outpath
     return True
 
 
