@@ -3,8 +3,6 @@ import os
 import webbrowser
 import os.path
 import yaml
-import json
-import uuid
 from jinja2 import Environment, PackageLoader
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -15,12 +13,7 @@ from shutil import copyfile
 from requests import get
 from uuid import uuid4
 from selenium.common.exceptions import TimeoutException
-from flask import Flask, request, Response
-
-#disable warnings
-import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from flask import Flask, request, jsonify
 
 try:
     import SocketServer
@@ -30,83 +23,6 @@ try:
     import SimpleHTTPServer
 except ImportError:
     import http.server as SimpleHTTPServer
-
-
-
-
-app = Flask(__name__)
-TASKS = {}
-numWorkers = None
-timeout = None
-verbose = None
-port = None
-user_agent = None
-
-class Task(object):
-
-    def __init__(self, urls):
-        self.urls = urls
-        self.id = str(uuid.uuid4())
-        self.status = "running"
-        self.result = {}
-
-    def run(self):
-        numWorkers = len(self.urls)
-        for url in self.urls:
-            print(url)
-        capture_snaps(self.urls, os.getcwd(), timeout, True, port, verbose,
-                  numWorkers, user_agent)
-        self.status = "ready"
-
-    def to_json(self):
-        return json.dumps({
-            "id": self.id,
-            "status": self.status,
-            "result": self.result
-        })
-
-@app.route('/api/v1/submit', methods=['POST'])
-def api_root():
-    if "urls" not in request.json:
-        return Response(
-            json.dumps({"error": "'urls' not specified"}),
-            status=400, mimetype='application/json'
-        )
-
-    new_task = Task(urls=request.json.get("urls"))
-    TASKS[new_task.id] = new_task
-
-    new_task.run()
-
-    return Response(
-        new_task.to_json(),
-        status=200,
-        mimetype='application/json'
-    )
-
-
-@app.route('/api/v1/tasks/<task_id>', methods=['GET', 'DELETE'])
-def api_article(task_id):
-    task = TASKS.get(task_id)
-    if task is None:
-        return Response(
-            json.dumps({"error": "no such task"}),
-            status=404, mimetype='application/json'
-        )
-    if request.method == "GET":
-        return Response(
-            task.to_json(),
-            status=200,
-            mimetype='application/json'
-        )
-    elif request.method == "DELETE":
-        del TASKS[task_id]
-        return Response(
-            "",
-            status=204,
-            mimetype='application/json'
-        )
-
 
 env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
@@ -242,14 +158,24 @@ def capture_snaps(hosts, outpath, timeout, serve, port,
     template = env.get_template('index.html')
     with open(os.path.join(outpath, "index.html"), "w") as outputFile:
         outputFile.write(template.render(setsOfSix=setsOfSix))
-    return True
+    if serve:
+        chdir("output")
+        Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        httpd = SocketServer.TCPServer((ip, port), Handler)
+        print("Serving at port", port)
+        httpd.serve_forever()
+    else:
+        return True
 
 
 # --------------------------MAIN------------------------- #
 #def main():
 if __name__ == "__main__":
     parser = ArgumentParser()
-
+    parser.add_argument("-f", "--file", action="store", dest="filename",
+                      help="Souce from input file", metavar="FILE")
+    parser.add_argument("-l", "--list", action="store", dest="list",
+                      help="Source from commandline list")
     parser.add_argument("-u", '--user-agent', action='store',
                       dest="user_agent", type=str,
                       default=config["USER_AGENT"],
@@ -266,14 +192,24 @@ if __name__ == "__main__":
     parser.add_argument("-v", action='store_true', dest="verbose",
                       help='Display console output for fetching each host')
     args = parser.parse_args()
-
+    if args.filename:
+        with open(args.filename, 'r') as inputFile:
+            hosts = inputFile.readlines()
+            hosts = map(lambda s: s.strip(), hosts)
+    elif args.list:
+        hosts = []
+        for item in args.list.split(","):
+            hosts.append(item.strip())
+    else:
+        print("invalid args")
+        sys.exit()
     numWorkers = args.numWorkers
     timeout = args.timeout
     verbose = args.verbose
     port = args.port
     user_agent = args.user_agent
 
-    app.run(port=port)
-
     # comment out webbrowser when done testing
     #webbrowser.open_new_tab("http://"+config["IP"]+":%s/" % port)
+    capture_snaps(hosts, os.getcwd(), timeout, True, port, verbose,
+                  numWorkers, user_agent)
