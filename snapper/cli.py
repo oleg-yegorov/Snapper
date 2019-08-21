@@ -4,7 +4,6 @@ import webbrowser
 import os.path
 import yaml
 import json
-import uuid
 import shutil
 from jinja2 import Environment, PackageLoader
 from selenium import webdriver
@@ -38,6 +37,7 @@ with open('config.yaml') as file:
     config = yaml.safe_load(file)
 OUTPUT_FILENAME = "snapper_output"
 app = Flask(__name__)
+server = None
 TASKS = {}
 numWorkers = None
 timeout = None
@@ -49,7 +49,7 @@ class Task(object):
 
     def __init__(self, urls):
         self.urls = urls
-        self.id = str(uuid.uuid4())
+        self.id = str(uuid4())
         self.status = "running"
         self.result = {}
         self.delete_path = None
@@ -88,6 +88,18 @@ def api_root():
         status=200,
         mimetype='application/json'
     )
+@app.route('/api/v1/shutdown', methods=['POST'])
+def shutdown():
+    outpath = os.path.join(os.getcwd(), OUTPUT_FILENAME)
+    shutil.rmtree(outpath)
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    return "Server shutting down... \n"
+    #server.terminate()
+    #server.join()
+
 
 
 @app.route('/api/v1/tasks/<task_id>', methods=['GET', 'DELETE'])
@@ -276,5 +288,7 @@ if __name__ == "__main__":
     port = args.port
     user_agent = args.user_agent
 
+    #server = Process(target=app.run(port=port))
+    #server.start()
     app.run(port=port)
 
