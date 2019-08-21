@@ -5,6 +5,7 @@ import os.path
 import yaml
 import json
 import uuid
+import shutil
 from jinja2 import Environment, PackageLoader
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -49,13 +50,14 @@ class Task(object):
         self.id = str(uuid.uuid4())
         self.status = "running"
         self.result = {}
+        self.delete_path = None
 
     def run(self):
         numWorkers = len(self.urls)
         for url in self.urls:
             print(url)
         capture_snaps(self.urls, os.getcwd(), timeout, True, port, verbose,
-                  numWorkers, user_agent)
+                  numWorkers, user_agent, self.id, self)
         self.status = "ready"
 
     def to_json(self):
@@ -75,6 +77,7 @@ def api_root():
 
     new_task = Task(urls=request.json.get("urls"))
     TASKS[new_task.id] = new_task
+
 
     new_task.run()
 
@@ -100,7 +103,9 @@ def api_article(task_id):
             mimetype='application/json'
         )
     elif request.method == "DELETE":
+        shutil.rmtree(TASKS[task_id].delete_path)
         del TASKS[task_id]
+        
         return Response(
             "",
             status=204,
@@ -133,7 +138,7 @@ def host_reachable(host, timeout):
         return False
 
 
-def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose):
+def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose, outpath, task_id):
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = user_agent
     dcap["accept_untrusted_certs"] = True
@@ -148,8 +153,8 @@ def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose):
         if not host.startswith("http://") and not host.startswith("https://"):
             host1 = "http://" + host
             host2 = "https://" + host
-            filename1 = os.path.join("output", "images", str(uuid4()) + ".png")
-            filename2 = os.path.join("output", "images", str(uuid4()) + ".png")
+            filename1 = os.path.join(outpath, "images", str(uuid4()) + ".png")
+            filename2 = os.path.join(outpath, "images", str(uuid4()) + ".png")
             if verbose:
                 print("Fetching %s" % host1)
             if host_reachable(host1, timeout) and save_image(host1, filename1,
@@ -167,7 +172,7 @@ def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose):
                 if verbose:
                     print("%s is unreachable or timed out" % host2)
         else:
-            filename = os.path.join("output", "images", str(uuid4()) + ".png")
+            filename = os.path.join(outpath, "images", str(uuid4()) + ".png")
             if verbose:
                 print("Fetching %s" % host)
             if host_reachable(host, timeout) and save_image(host, filename,
@@ -179,9 +184,11 @@ def host_worker(hostQueue, fileQueue, timeout, user_agent, verbose):
 
 
 def capture_snaps(hosts, outpath, timeout, serve, port,
-                  verbose, numWorkers, user_agent):
+                  verbose, numWorkers, user_agent, task_id, task):
     ip = config["IP"]
-    outpath = os.path.join(outpath, "output")
+    outpath = os.path.join(outpath, "output", task_id)
+    task.delete_path = outpath
+    print(task.delete_path)
     cssOutputPath = os.path.join(outpath, "css")
     jsOutputPath = os.path.join(outpath, "js")
     imagesOutputPath = os.path.join(outpath, "images")
@@ -211,7 +218,7 @@ def capture_snaps(hosts, outpath, timeout, serve, port,
         hostQueue.put(host)
     for i in range(numWorkers):
         p = Process(target=host_worker, args=(hostQueue, fileQueue, timeout,
-                    user_agent, verbose))
+                    user_agent, verbose, outpath, task_id))
         workers.append(p)
         p.start()
     try:
@@ -275,5 +282,3 @@ if __name__ == "__main__":
 
     app.run(port=port)
 
-    # comment out webbrowser when done testing
-    #webbrowser.open_new_tab("http://"+config["IP"]+":%s/" % port)

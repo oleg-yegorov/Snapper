@@ -20,14 +20,14 @@ npm -g install phantomjs
 
 For a simple demo try:
 ```
-snap -l "google.com, gmail.google.com,ads.google.com" -c 3 -p 8000
+snap -l "google.com, gmail.google.com,ads.google.com" -c 3
 ```
 This kicks off 3 processes, each of which fetch screenshots of the http and https versions of the hosts in question. The output is served up via the given port, http://127.0.0.1:8000 by default
 ![output results](http://i.imgur.com/OlvyIBp.png)
 
 You can also read from a file, these results where generated from a [fierce](https://github.com/mschwager/fierce) enumeration:
 ```
-snap -f googleExample.txt -c 10 -v
+snap -f googleExample.txt -c 10
 ```
 You can view the results [here](https://security.love/Snapper/output). Note in addition to the server, the static files are available in your current working directory as "output"
 
