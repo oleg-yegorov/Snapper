@@ -1,12 +1,12 @@
 # Snapper
-A security tool for grabbing screenshots of many web hosts. This tool is useful after [DNS enumeration](https://github.com/mschwager/fierce) or after enumerating web hosts via nmap or nessus.
+A security tool for grabbing screenshots of many web hosts. This tool is useful after [DNS enumeration](https://github.com/mschwager/fierce) or after enumerating web hosts via nmap or nessus. Here is the github [link](https://github.com/revisor48/Snapper).
 
 ## How to install 
 
 
-- Pypl package
+- PyPl package
 ```bash
-pip install -i  https://test.pypi.org/simple/ snapper
+pip install snapper
 ```
 
 - Install phantomJS (you need to have [npm installed](https://nodejs.org/en/download/package-manager/))
@@ -17,17 +17,14 @@ npm -g install phantomjs
 ## How to use
 ### On the server side
 
-To start up the application from pypi:
+To start up the application:
 
 ```
 snap
 ```
 
-You can also launch it directly from [github](https://github.com/revisor48/Snapper), make sure requirenment.txt is satisfied:
+, make sure requirenment.txt is satisfied:
 
-```
-python cli.py
-```
 ### On the user side
 POST command populates the data:
 ```
@@ -62,6 +59,7 @@ Options:
   -t TIMEOUT, --timeout=TIMEOUT
                         Number of seconds to try to resolve
   -p PORT, --port=PORT  Port to run server on
+  -H HOST, --host=HOST  Host to run server on  
   -v                    Display console output for fetching each host
   
 ```

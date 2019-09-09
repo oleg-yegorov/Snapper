@@ -26,12 +26,11 @@ class Task(object):
         if not Path(self.output_path).exists():
             os.makedirs(self.output_path)
 
-        process_thread = threading.Thread(target=capture_snaps,
+        thread = threading.Thread(target=capture_snaps,
           args = (self.urls, self.output_path, self.timeout, num_workers,
                   self.user_agent, self.result, self.phantomjs_binary, self,)) 
-        process_thread.daemon = True
-        process_thread.start()
-        #self.status = "ready"
+        thread.daemon = True
+        thread.start()
 
     def to_dict(self):
         return {
