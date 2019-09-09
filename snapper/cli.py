@@ -48,6 +48,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-p", '--port', action='store',
                         dest="port", type=int, default=defaults["app"]["port"],
                         help='Port to run server on')
+    parser.add_argument("-H", '--host', action='store',
+                        dest="host", type=str, default=defaults["app"]["host"],
+                        help='Port to run server on')
     parser.add_argument("-v", action='store_true', dest="verbose",
                         help='Display console output for fetching each host')
     return parser
