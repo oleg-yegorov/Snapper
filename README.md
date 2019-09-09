@@ -41,11 +41,6 @@ Each POST request has an id, which you can use to access the data outputted by i
 curl -XGET http://127.0.0.1:8000/api/v1/tasks/164157d3-472d-4e25-8488-389e206d24bb
 ```
 
-You can also read from a file, these results where generated from a [fierce](https://github.com/mschwager/fierce) enumeration:
-```
-snap -f googleExample.txt -c 10
-```
-
 You can view the results [here](https://security.love/Snapper/output). Note in addition to the server, the static files are available in your current working directory as "output"
 
 
@@ -58,14 +53,15 @@ snap --help
 ```
 Options:
   -h, --help            show this help message and exit
-  -f FILE, --file=FILE  Souce from input file
-  -l LIST, --list=LIST  Source from commandline list
   -u USER_AGENT, --user-agent=USER_AGENT
                         The user agent used for requests
-  -c NUMWORKERS, --concurrency=NUMWORKERS
-                        Number of cuncurrent processes
+  -o OUTPUT_DIR, --output=OUTPUT_DIR	
+  						Directory for output
+  -l LOGS, --log_level=LOGS 
+  						Logging facility level
   -t TIMEOUT, --timeout=TIMEOUT
                         Number of seconds to try to resolve
   -p PORT, --port=PORT  Port to run server on
   -v                    Display console output for fetching each host
+  
 ```

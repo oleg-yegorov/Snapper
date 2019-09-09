@@ -5,7 +5,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 name = 'snapper'
-version = '0.0.8'
+version = '0.0.1'
 
 
 def find_description():

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from uuid import uuid4
+import threading
 
 from snapper.worker import capture_snaps
 
@@ -25,16 +26,12 @@ class Task(object):
         if not Path(self.output_path).exists():
             os.makedirs(self.output_path)
 
-        capture_snaps(
-            urls=self.urls,
-            outpath=self.output_path,
-            timeout=self.timeout,
-            num_workers=num_workers,
-            user_agent=self.user_agent,
-            result=self.result,
-            phantomjs_binary=self.phantomjs_binary
-        )
-        self.status = "ready"
+        process_thread = threading.Thread(target=capture_snaps,
+          args = (self.urls, self.output_path, self.timeout, num_workers,
+                  self.user_agent, self.result, self.phantomjs_binary, self,)) 
+        process_thread.daemon = True
+        process_thread.start()
+        #self.status = "ready"
 
     def to_dict(self):
         return {
