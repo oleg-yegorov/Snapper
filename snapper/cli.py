@@ -36,9 +36,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-u", '--user-agent', action='store',
                         dest="user_agent", type=str,
                         help='The user agent used for requests')
-    parser.add_argument("-w", '--workers', action='store',
-                        dest="num_workers", type=int,
-                        help='Number of concurrent processes')
     parser.add_argument("-o", '--output', action='store',
                         dest="output_dir", type=str,
                         help='Directory for output')
@@ -53,7 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help='Port to run server on')
     parser.add_argument("-H", '--host', action='store',
                         dest="host", type=str, default=defaults["app"]["host"],
-                        help='Port to run server on')
+                        help='Host to run server on')
     parser.add_argument("-v", action='store_true', dest="verbose",
                         help='Display console output for fetching each host')
     return parser
@@ -61,7 +58,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main():
     args, remaining_argv = build_parser().parse_known_args()
-    logging.basicConfig(level=getattr(logging, args.log_level))
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    #logging.basicConfig(level=getattr(logging, args.log_level))
     app.config.update(vars(args))
     app.run(host=args.host, port=args.port, debug=True)
 

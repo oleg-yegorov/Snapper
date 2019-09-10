@@ -81,7 +81,7 @@ def host_worker(host_queue, file_queue, timeout,
 
 
 def capture_snaps(urls, outpath, timeout, num_workers,
-                  user_agent, result, phantomjs_binary):
+                  user_agent, result, phantomjs_binary, task):
     css_output_path = Path(outpath) / "css"
     js_output_path = Path(outpath) / "js"
     images_output_path = Path(outpath) / "images"
@@ -116,14 +116,16 @@ def capture_snaps(urls, outpath, timeout, num_workers,
                     user_agent, outpath, phantomjs_binary))
         workers.append(p)
         p.start()
+
     try:
         for worker in workers:
-            worker.join()
+          worker.join()
     except KeyboardInterrupt:
         for worker in workers:
-            worker.terminate()
-            worker.join()
+          worker.terminate()
+          worker.join()
         sys.exit()
+
     sets_of_six = []
     count = 0
     urls = {}
@@ -142,4 +144,5 @@ def capture_snaps(urls, outpath, timeout, num_workers,
     template = env.get_template('index.html')
     with open(Path(outpath) / "index.html", "w") as output_file:
         output_file.write(template.render(sets_of_six=sets_of_six))
+    task.status = "ready"
     result.update({"all": str(outpath)})
