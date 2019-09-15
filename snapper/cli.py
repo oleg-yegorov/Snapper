@@ -13,7 +13,6 @@ from snapper import app
 # disable warnings
 urllib3.disable_warnings(InsecureRequestWarning)
 
-
 # --------------------------MAIN------------------------- #
 def build_parser() -> argparse.ArgumentParser:
     conf_parser = argparse.ArgumentParser(
@@ -42,11 +41,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-l", '--log_level', action='store',
                         dest="log_level", type=str,
                         help='Logging facility level')
+    parser.add_argument("-w", '--workers', action='store', 
+                        dest="workers", type=int, 
+                        help='Number of cuncurrent processes')
     parser.add_argument("-t", '--timeout', action='store',
                         dest="timeout", type=int,
                         help='Number of seconds to try to resolve')
     parser.add_argument("-p", '--port', action='store',
-                        dest="port", type=int, default=defaults["app"]["port"],
+                        dest="port", type=str, default=defaults["app"]["port"],
                         help='Port to run server on')
     parser.add_argument("-H", '--host', action='store',
                         dest="host", type=str, default=defaults["app"]["host"],

@@ -30,7 +30,7 @@ class SubmitResource(Resource):
                 jsonify({"message": "'urls' not specified"}), 400)
 
         new_task = self.create_task(request.json.get("urls"))
-        new_task.run(num_workers=app.config["num_workers"])
+        new_task.run()
         return jsonify(new_task.to_dict())
 
 

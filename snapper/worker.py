@@ -38,7 +38,8 @@ def host_reachable(host, timeout):
 
 
 def host_worker(host_queue, file_queue, timeout,
-                user_agent, outpath, phantomjs_binary):
+                user_agent, outpath, phantomjs_binary, task):
+    print("SNAKE")
     dcap = dict(DesiredCapabilities.PHANTOMJS)
     dcap["phantomjs.page.settings.userAgent"] = user_agent
     dcap["phantomjs.binary.path"] = phantomjs_binary
@@ -49,7 +50,8 @@ def host_worker(host_queue, file_queue, timeout,
     # optional
     driver.set_window_size(1024, 768)
     driver.set_page_load_timeout(timeout)
-    while not host_queue.empty():
+    while True:
+    #while not host_queue.empty():
         host = host_queue.get()
         if not host.startswith("http://") and not host.startswith("https://"):
             host_http = "http://" + host
@@ -79,70 +81,30 @@ def host_worker(host_queue, file_queue, timeout,
             else:
                 logging.debug("%s is unreachable or timed out", host)
 
+    task.left = task.left-1
+    if(task.left == 0):
+        finish_task(task, file_queue, outpath)
 
-def capture_snaps(urls, outpath, timeout, num_workers,
-                  user_agent, result, phantomjs_binary, task):
-    css_output_path = Path(outpath) / "css"
-    js_output_path = Path(outpath) / "js"
-    images_output_path = Path(outpath) / "images"
+    def finish_task(task, file_queue, outpath):
+        sets_of_six = []
+        count = 0
+        urls = {}
+        while not file_queue.empty():
+            if count == 6:
+                sets_of_six.append(urls.items())
+                urls = {}
+                count = 0
+            temp = file_queue.get()
+            urls.update(temp)
 
-    os.makedirs(css_output_path)
-    os.makedirs(js_output_path)
-    os.makedirs(images_output_path)
-
-    css_template_path = Path(__file__).parent / "templates" / "css"
-    js_template_path = Path(__file__).parent / "templates" / "js"
-    shutil.copyfile(
-        css_template_path / "materialize.min.css",
-        css_output_path / "materialize.min.css"
-    )
-    shutil.copyfile(
-        js_template_path / "jquery.min.js",
-        js_output_path / "jquery.min.js"
-    )
-    shutil.copyfile(
-        js_template_path / "materialize.min.js",
-        js_output_path / "materialize.min.js"
-    )
-
-    host_queue = Queue()
-    file_queue = Queue()
-
-    workers = []
-    for host in urls:
-        host_queue.put(host)
-    for i in range(num_workers):
-        p = Process(target=host_worker, args=(host_queue, file_queue, timeout,
-                    user_agent, outpath, phantomjs_binary))
-        workers.append(p)
-        p.start()
-
-    try:
-        for worker in workers:
-          worker.join()
-    except KeyboardInterrupt:
-        for worker in workers:
-          worker.terminate()
-          worker.join()
-        sys.exit()
-
-    sets_of_six = []
-    count = 0
-    urls = {}
-    while not file_queue.empty():
-        if count == 6:
+        try:
             sets_of_six.append(urls.items())
-            urls = {}
-            count = 0
-        temp = file_queue.get()
-        urls.update(temp)
+        except AttributeError:
+            sets_of_six.append(urls.items())
+        template = env.get_template('index.html')
+        with open(Path(outpath) / "index.html", "w") as output_file:
+            output_file.write(template.render(sets_of_six=sets_of_six))
+        task.status = "ready"
+        task.result.update({"all": str(outpath)})
 
-    try:
-        sets_of_six.append(urls.items())
-    except AttributeError:
-        sets_of_six.append(urls.items())
-    template = env.get_template('index.html')
-    with open(Path(outpath) / "index.html", "w") as output_file:
-        output_file.write(template.render(sets_of_six=sets_of_six))
-    task.status = "ready"
-    result.update({"all": str(outpath)})
+

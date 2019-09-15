@@ -23,8 +23,6 @@ To start up the application:
 snap
 ```
 
-, make sure requirenment.txt is satisfied:
-
 ### On the user side
 POST command populates the data:
 ```

@@ -3,10 +3,10 @@ from pathlib import Path
 from uuid import uuid4
 import threading
 
-from snapper.worker import capture_snaps
+from snapper.scheduler import scheduler
 
 
-class Task(object):
+class Task:
 
     def __init__(self, urls, timeout, user_agent, output, phantomjs_binary):
         self.urls = urls
@@ -18,19 +18,25 @@ class Task(object):
         self.timeout = timeout
         self.user_agent = user_agent
         self.phantomjs_binary = phantomjs_binary
+        self.left = len(urls)
 
-    def run(self, num_workers):
+    def run(self):
         for url in self.urls:
             print(url)
 
         if not Path(self.output_path).exists():
             os.makedirs(self.output_path)
 
-        thread = threading.Thread(target=capture_snaps,
-          args = (self.urls, self.output_path, self.timeout, num_workers,
-                  self.user_agent, self.result, self.phantomjs_binary, self,)) 
-        thread.daemon = True
-        thread.start()
+        task = self
+
+        scheduler.capture_snaps(
+            urls=self.urls,
+            outpath=self.output_path,
+            timeout=self.timeout,
+            user_agent=self.user_agent,
+            phantomjs_binary=self.phantomjs_binary,
+            task = task
+        )
 
     def to_dict(self):
         return {
