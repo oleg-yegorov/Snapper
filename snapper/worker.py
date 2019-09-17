@@ -76,20 +76,22 @@ def host_worker(url_id, task):
         return host, str(filename)
     else:
         logging.debug("%s is unreachable or timed out", host)
+        return host, None
 
 
-def finish_task(task, urls_to_filenames, outpath):
+def finish_task(urls_to_filenames, task):
     # absolute path to relative path
     urls_to_filenames = [
-        (_, os.path.relpath(filename, outpath))
+        (_, os.path.relpath(filename, task.output_path))
         for _, filename in urls_to_filenames
+        if filename
     ]
 
     sets_of_six = list(zip(*[iter(urls_to_filenames)]*6))
     sets_of_six.append(urls_to_filenames[len(sets_of_six)*6:])
 
     template = env.get_template('index.html')
-    with open(Path(outpath) / "index.html", "w") as output_file:
+    with open(Path(task.output_path) / "index.html", "w") as output_file:
         output_file.write(template.render(sets_of_six=sets_of_six))
     task.status = "ready"
-    task.result.update({"all": str(outpath)})
+    task.result.update({"all": str(task.output_path)})

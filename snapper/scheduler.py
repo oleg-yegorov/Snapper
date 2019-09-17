@@ -15,13 +15,12 @@ class Scheduler:
         workers = config["workers"]
         self.pool = Pool(workers)
 
-    def capture_snaps(self, task):
+    async def capture_snaps(self, task):
         copy_template(task)
 
         host_worker_call = partial(host_worker, task=task)
-        filenames = self.pool.map(host_worker_call, range(len(task.urls)))
-
-        finish_task(task, filenames, task.output_path)
+        finish_task_call = partial(finish_task, task=task)
+        self.pool.map_async(host_worker_call, range(len(task.urls)), callback=finish_task_call)
 
 
 scheduler = Scheduler()

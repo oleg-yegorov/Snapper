@@ -1,7 +1,7 @@
+import asyncio
 import os
 from pathlib import Path
 from uuid import uuid4
-
 
 
 class Task:
@@ -29,10 +29,8 @@ class Task:
         if not Path(self.output_path).exists():
             os.makedirs(self.output_path)
 
-        task = self
-
         from snapper.scheduler import scheduler
-        scheduler.capture_snaps(task)
+        asyncio.create_task(scheduler.capture_snaps(self))
 
     def to_dict(self):
         return {

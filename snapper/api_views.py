@@ -1,40 +1,42 @@
 from typing import List, Optional
 
-from flask import request, Response
-from flask import jsonify, make_response
-from flask_restful import Resource
+from aiohttp.web import json_response
+from aiohttp.web_app import Application
+from aiohttp.web_request import Request
+from aiohttp.web_response import Response
 
-from snapper import app, api
+from snapper import app
 from snapper.task import Task
 
 TASKS = {}
 
 
-class SubmitResource(Resource):
-
+class SubmitResource:
     @staticmethod
     def create_task(urls: List[str]) -> Task:
         new_task = Task(
             urls=urls,
-            timeout=app.config["timeout"],
-            user_agent=app.config["user_agent"],
-            output=app.config["output_dir"],
-            phantomjs_binary=app.config["phantomjs_binary"]
+            timeout=app["timeout"],
+            user_agent=app["user_agent"],
+            output=app["output_dir"],
+            phantomjs_binary=app["phantomjs_binary"]
         )
         TASKS[new_task.id] = new_task
         return new_task
 
-    def post(self) -> Response:
-        if "urls" not in request.json:
-            return make_response(
-                jsonify({"message": "'urls' not specified"}), 400)
+    @staticmethod
+    async def post(request: Request) -> Response:
+        data = await request.json()
 
-        new_task = self.create_task(request.json.get("urls"))
+        if "urls" not in data:
+            return json_response({"message": "'urls' not specified"}, status=400)
+
+        new_task = SubmitResource.create_task(data["urls"])
         new_task.run()
-        return jsonify(new_task.to_dict())
+        return json_response(new_task.to_dict(), status=200)
 
 
-class TaskResource(Resource):
+class TaskResource:
     @staticmethod
     def load_task(task_id: str) -> Optional[Task]:
         return TASKS.get(task_id)
@@ -45,28 +47,29 @@ class TaskResource(Resource):
         # shutil.rmtree(TASKS[task_id].output_path)
         del TASKS[task_id]
 
-    def get(self, task_id: str) -> Response:
-        task = self.load_task(task_id)
+    @staticmethod
+    async def get(request: Request) -> Response:
+        task_id = request.match_info.get('task_id')
+        task = TaskResource.load_task(task_id)
         if task is None:
-            return make_response(
-                jsonify({"message": "no such task"}), 404)
-        return jsonify(task.to_dict())
+            return json_response({"message": "no such task"}, status=404)
+        return json_response(task.to_dict(), status=200)
 
-    def delete(self, task_id: str) -> Response:
-        self.delete_task(task_id)
-        return Response(
-            "",
-            status=204,
-            mimetype='application/json'
-        )
+    @staticmethod
+    async def delete(request: Request) -> Response:
+        task_id = request.match_info.get('task_id')
+        TaskResource.delete_task(task_id)
+        return json_response("", status=204)
 
 
-class TaskListResource(Resource):
+class TaskListResource:
+    @staticmethod
+    async def get(request: Request) -> Response:
+        return json_response([task.to_dict() for task in TASKS.values()])
 
-    def get(self) -> Response:
-        return jsonify([task.to_dict() for task in TASKS.values()])
 
-
-api.add_resource(SubmitResource, '/api/v1/submit')
-api.add_resource(TaskListResource, '/api/v1/tasks')
-api.add_resource(TaskResource, '/api/v1/tasks/<task_id>')
+def setup_routes(app: Application) -> None:
+    app.router.add_post("/api/v1/submit", SubmitResource.post)
+    app.router.add_get("/api/v1/tasks", TaskListResource.get)
+    app.router.add_get('/api/v1/tasks/{task_id}', TaskResource.get)
+    app.router.add_delete('/api/v1/tasks/{task_id}', TaskResource.delete)
