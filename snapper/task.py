@@ -1,15 +1,20 @@
 import os
 from pathlib import Path
 from uuid import uuid4
-import threading
 
-from snapper.scheduler import scheduler
 
 
 class Task:
 
     def __init__(self, urls, timeout, user_agent, output, phantomjs_binary):
-        self.urls = urls
+        self.urls = []
+        for url in urls:
+            if url.startswith("https://") or url.startswith("https://"):
+                self.urls.append(url)
+            else:
+                self.urls.append("http://" + url)
+                self.urls.append("https://" + url)
+
         self.id = str(uuid4())
         self.status = "running"
         self.result = {}
@@ -21,22 +26,13 @@ class Task:
         self.left = len(urls)
 
     def run(self):
-        for url in self.urls:
-            print(url)
-
         if not Path(self.output_path).exists():
             os.makedirs(self.output_path)
 
         task = self
 
-        scheduler.capture_snaps(
-            urls=self.urls,
-            outpath=self.output_path,
-            timeout=self.timeout,
-            user_agent=self.user_agent,
-            phantomjs_binary=self.phantomjs_binary,
-            task = task
-        )
+        from snapper.scheduler import scheduler
+        scheduler.capture_snaps(task)
 
     def to_dict(self):
         return {

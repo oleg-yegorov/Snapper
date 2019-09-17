@@ -1,62 +1,27 @@
-from multiprocessing import Queue, Pool, Manager
-import shutil
-import os
-
-#from snapper import app
-from snapper.worker import host_worker
-
-import yaml
+from functools import partial
+from multiprocessing import Pool
 from pathlib import Path
 
+import yaml
 
-#host_queue = None
-#pool = None
+from snapper.worker import copy_template, finish_task, host_worker
+
 
 class Scheduler:
-
-
     def __init__(self):
         with open(Path(__file__).parent / "config.yaml") as file:
             config = yaml.safe_load(file)
-        #workers = app.config["workers"]   
+
         workers = config["workers"]
-        #manager = Manager()
-        self.host_queue = Queue()
         self.pool = Pool(workers)
 
+    def capture_snaps(self, task):
+        copy_template(task)
 
-    def capture_snaps(self, urls, outpath, timeout,
-                      user_agent, phantomjs_binary, task):
-        css_output_path = Path(outpath) / "css"
-        js_output_path = Path(outpath) / "js"
-        images_output_path = Path(outpath) / "images"
+        host_worker_call = partial(host_worker, task=task)
+        filenames = self.pool.map(host_worker_call, range(len(task.urls)))
 
-        os.makedirs(css_output_path)
-        os.makedirs(js_output_path)
-        os.makedirs(images_output_path)
+        finish_task(task, filenames, task.output_path)
 
-        css_template_path = Path(__file__).parent / "templates" / "css"
-        js_template_path = Path(__file__).parent / "templates" / "js"
-        shutil.copyfile(
-            css_template_path / "materialize.min.css",
-            css_output_path / "materialize.min.css"
-        )
-        shutil.copyfile(
-            js_template_path / "jquery.min.js",
-            js_output_path / "jquery.min.js"
-        )
-        shutil.copyfile(
-            js_template_path / "materialize.min.js",
-            js_output_path / "materialize.min.js"
-        )
-
-        #manager = Manager()
-        file_queue = Queue()
-
-        for host in urls:
-            self.host_queue.put(host)
-
-        self.pool.apply_async(host_worker, (self.host_queue, file_queue, timeout,
-                user_agent, outpath, phantomjs_binary, task,))
 
 scheduler = Scheduler()
