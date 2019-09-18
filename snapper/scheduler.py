@@ -1,19 +1,13 @@
 from functools import partial
 from multiprocessing import Pool
-from pathlib import Path
 
-import yaml
-
+from snapper import app
 from snapper.worker import copy_template, finish_task, host_worker
 
 
 class Scheduler:
     def __init__(self):
-        with open(Path(__file__).parent / "config.yaml") as file:
-            config = yaml.safe_load(file)
-
-        workers = config["workers"]
-        self.pool = Pool(workers)
+        self.pool = Pool(app["workers"])
 
     async def capture_snaps(self, task):
         copy_template(task)
