@@ -9,7 +9,7 @@ class Task:
     def __init__(self, urls, timeout, user_agent, output, phantomjs_binary):
         self.urls = []
         for url in urls:
-            if url.startswith("https://") or url.startswith("https://"):
+            if url.startswith("https://") or url.startswith("http://"):
                 self.urls.append(url)
             else:
                 self.urls.append("http://" + url)
