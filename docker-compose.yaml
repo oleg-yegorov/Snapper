@@ -1,0 +1,18 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - '8000:8000'
+    volumes:
+      - snapper_output:/snapper_output
+
+  nginx:
+    image: 'nginx:latest'
+    ports:
+      - '8080:80'
+    volumes:
+      - snapper_output:/usr/share/nginx/html/snapper_output
+
+volumes:
+    snapper_output:
