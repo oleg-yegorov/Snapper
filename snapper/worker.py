@@ -27,8 +27,7 @@ def host_reachable(host, timeout):
     try:
         requests.get(host, timeout=timeout, verify=False)
         return True
-    # not sure which exception
-    except TimeoutException:
+    except requests.exceptions.RequestException:
         return False
 
 
