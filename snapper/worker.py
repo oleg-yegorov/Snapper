@@ -80,6 +80,8 @@ def host_worker(url_id, task):
 
 
 def finish_task(urls_to_filenames, task):
+    task.result.update(dict(urls_to_filenames))
+
     # absolute path to relative path
     urls_to_filenames = [
         (_, os.path.relpath(filename, task.output_path))
@@ -93,5 +95,6 @@ def finish_task(urls_to_filenames, task):
     template = env.get_template('index.html')
     with open(Path(task.output_path) / "index.html", "w") as output_file:
         output_file.write(template.render(sets_of_six=sets_of_six))
+
     task.status = "ready"
     task.result.update({"all": str(task.output_path)})
