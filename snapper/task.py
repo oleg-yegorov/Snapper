@@ -7,14 +7,7 @@ from uuid import uuid4
 class Task:
 
     def __init__(self, urls, timeout, user_agent, output, phantomjs_binary):
-        self.urls = []
-        for url in urls:
-            if url.startswith("https://") or url.startswith("http://"):
-                self.urls.append(url)
-            else:
-                self.urls.append("http://" + url)
-                self.urls.append("https://" + url)
-
+        self.urls = urls
         self.id = str(uuid4())
         self.status = "running"
         self.result = {}

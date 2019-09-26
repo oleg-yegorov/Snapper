@@ -69,13 +69,17 @@ def host_worker(url_id, task):
     driver.set_page_load_timeout(task.timeout)
 
     filename = Path(task.output_path) / "images" / (str(uuid4()) + ".png")
+
     host = task.urls[url_id]
+    if not host.startswith("https://") and not host.startswith("http://"):
+        host = "http://" + host
+
     logging.debug("Fetching %s", host)
     if host_reachable(host, task.timeout) and save_image(host, str(filename), driver):
-        return host, str(filename)
+        return task.urls[url_id], str(filename)
     else:
         logging.debug("%s is unreachable or timed out", host)
-        return host, None
+        return task.urls[url_id], None
 
 
 def finish_task(urls_to_filenames, task):
