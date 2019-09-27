@@ -5,6 +5,7 @@ app:
 
 phantomjs_binary: "/usr/bin/phantomjs"
 output_dir: "snapper_output"
+output_paths_format: "{}"
 timeout: 10
 workers: 3
 user_agent: "Mozilla/5.0 (Windows NT6.1) AppleWebKit/537.36 (KHTML,like Gecko) \

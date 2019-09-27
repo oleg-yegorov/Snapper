@@ -36,6 +36,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-u", '--user-agent', action='store',
                         dest="user_agent", type=str,
                         help='The user agent used for requests')
+    parser.add_argument("-f", "--output_paths_format", action="store",
+                        dest="output_paths_format", type=str,
+                        help="Format applied to output paths")
     parser.add_argument("-o", '--output', action='store',
                         dest="output_dir", type=str,
                         help='Directory for output')

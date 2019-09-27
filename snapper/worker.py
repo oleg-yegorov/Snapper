@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
+from snapper import app
 import requests
 from jinja2 import Environment, PackageLoader
 from selenium import webdriver
@@ -83,7 +84,11 @@ def host_worker(url_id, task):
 
 
 def finish_task(urls_to_filenames, task):
-    task.result.update(dict(urls_to_filenames))
+    task.result.update({
+        _: app['output_paths_format'].format(filename)
+        for _, filename in urls_to_filenames
+        if filename
+    })
 
     # absolute path to relative path
     urls_to_filenames = [
@@ -96,8 +101,9 @@ def finish_task(urls_to_filenames, task):
     sets_of_six.append(urls_to_filenames[len(sets_of_six)*6:])
 
     template = env.get_template('index.html')
-    with open(Path(task.output_path) / "index.html", "w") as output_file:
-        output_file.write(template.render(sets_of_six=sets_of_six))
+    index_file_path = Path(task.output_path) / "index.html"
+    with open(index_file_path, "w") as index_file:
+        index_file.write(template.render(sets_of_six=sets_of_six))
 
+    task.result.update({"all": app['output_paths_format'].format(str(index_file_path))})
     task.status = "ready"
-    task.result.update({"all": str(task.output_path)})
