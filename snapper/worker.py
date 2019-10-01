@@ -8,7 +8,6 @@ import requests
 from jinja2 import Environment, PackageLoader
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
@@ -57,14 +56,16 @@ def copy_template(task):
 
 
 def host_worker(url_id, task):
-    dcap = dict(DesiredCapabilities.PHANTOMJS)
-    dcap["phantomjs.page.settings.userAgent"] = task.user_agent
-    dcap["phantomjs.binary.path"] = task.phantomjs_binary
-    dcap["accept_untrusted_certs"] = True
-    # or add to your PATH
-    driver = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'],
-                                 desired_capabilities=dcap)
-    # optional
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.headless = True
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--user-agent={}'.format(task.user_agent))
+
+    # arguments to run in docker container
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=task.chrome_binary)
     driver.set_window_size(1024, 768)
     driver.set_page_load_timeout(task.timeout)
 
