@@ -4,10 +4,10 @@ from pathlib import Path
 
 import urllib3
 import yaml
+from aiohttp import web
 from aiohttp.web import run_app
 from urllib3.exceptions import InsecureRequestWarning
 
-from snapper import app
 from snapper.api_views import setup_routes
 
 # disable warnings
@@ -62,11 +62,18 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def setup_logger(log_level):
+    try:
+        logging.basicConfig(level=log_level)
+    except ValueError:
+        raise argparse.ArgumentTypeError('Unknown log level'.format(key=log_level)) from None
+
+
 def main():
     args, remaining_argv = build_parser().parse_known_args()
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    #logging.basicConfig(level=getattr(logging, args.log_level))
+    setup_logger(args.log_level)
 
+    app = web.Application()
     app.update(vars(args))
     setup_routes(app)
     run_app(app, host=args.host, port=args.port)

@@ -4,8 +4,6 @@ from aiohttp.web import json_response
 from aiohttp.web_app import Application
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
-
-from snapper import app
 from snapper.task import Task
 
 TASKS = {}
@@ -13,26 +11,25 @@ TASKS = {}
 
 class SubmitResource:
     @staticmethod
-    def create_task(urls: List[str]) -> Task:
-        new_task = Task(
-            urls=urls,
-            timeout=app["timeout"],
-            user_agent=app["user_agent"],
-            output=app["output_dir"],
-            phantomjs_binary=app["phantomjs_binary"]
-        )
-        TASKS[new_task.id] = new_task
-        return new_task
-
-    @staticmethod
     async def post(request: Request) -> Response:
         data = await request.json()
+        app = request.app
 
         if "urls" not in data:
             return json_response({"message": "'urls' not specified"}, status=400)
 
-        new_task = SubmitResource.create_task(data["urls"])
+        new_task = Task(
+            urls=data["urls"],
+            timeout=app["timeout"],
+            user_agent=app["user_agent"],
+            output=app["output_dir"],
+            phantomjs_binary=app["phantomjs_binary"],
+            workers=app["workers"],
+            output_paths_format=app['output_paths_format'],
+        )
+        TASKS[new_task.id] = new_task
         new_task.run()
+
         return json_response(new_task.to_dict(), status=200)
 
 
