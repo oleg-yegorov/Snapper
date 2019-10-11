@@ -4,30 +4,11 @@ import shutil
 from pathlib import Path
 from uuid import uuid4
 
-import requests
 from jinja2 import Environment, PackageLoader
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from snapper.web_driver import WebDriver
 
 env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
-
-
-def save_image(uri: str, file_name: str, driver):
-    try:
-        driver.get(uri)
-        driver.save_screenshot(file_name)
-        return True
-    except TimeoutException:
-        return False
-
-
-def host_reachable(host, timeout):
-    try:
-        requests.get(host, timeout=timeout, verify=False)
-        return True
-    except requests.exceptions.RequestException:
-        return False
 
 
 def copy_template(task):
@@ -56,31 +37,19 @@ def copy_template(task):
 
 
 def host_worker(url_id, task):
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.headless = True
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--user-agent={}'.format(task.user_agent))
+    with WebDriver(task.user_agent, task.chrome_binary, task.timeout) as web_driver:
+        filename = Path(task.output_path) / "images" / (str(uuid4()) + ".png")
 
-    # arguments to run in docker container
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+        host = task.urls[url_id]
+        if not host.startswith("https://") and not host.startswith("http://"):
+            host = "http://" + host
 
-    driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=task.chrome_binary)
-    driver.set_window_size(1024, 768)
-    driver.set_page_load_timeout(task.timeout)
-
-    filename = Path(task.output_path) / "images" / (str(uuid4()) + ".png")
-
-    host = task.urls[url_id]
-    if not host.startswith("https://") and not host.startswith("http://"):
-        host = "http://" + host
-
-    logging.debug("Fetching %s", host)
-    if host_reachable(host, task.timeout) and save_image(host, str(filename), driver):
-        return task.urls[url_id], str(filename)
-    else:
-        logging.debug("%s is unreachable or timed out", host)
-        return task.urls[url_id], None
+        logging.debug("Fetching %s", host)
+        if WebDriver.host_reachable(host, task.timeout) and web_driver.save_image(host, str(filename)):
+            return task.urls[url_id], str(filename)
+        else:
+            logging.debug("%s is unreachable or timed out", host)
+            return task.urls[url_id], None
 
 
 def finish_task(urls_to_filenames, task, output_paths_format):

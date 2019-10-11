@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   snapper:
     build: .
@@ -7,6 +7,7 @@ services:
     volumes:
       - snapper_output:/snapper_output
     command: --output_paths_format "http://localhost:8080{}"
+    init: true
 
   nginx:
     image: 'nginx:latest'
