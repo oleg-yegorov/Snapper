@@ -1,22 +1,19 @@
-FROM python:3.7
+FROM ubuntu:18.04
 
-# Install Google Chrome
-RUN curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN echo "deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
-    RUN apt-get -y update && apt-get -y install google-chrome-stable=77.0.3865.90-1
+# Enable universe repository, install chromedriver
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository universe
+RUN apt install -y chromium-chromedriver
 
-# Install ChromeDriver
-RUN wget https://chromedriver.storage.googleapis.com/77.0.3865.40/chromedriver_linux64.zip
-RUN unzip chromedriver_linux64.zip && rm chromedriver_linux64.zip
-RUN mv chromedriver /usr/bin/chromedriver
-RUN chmod +x /usr/bin/chromedriver
+RUN apt-get install -y python3.7 python3-pip
 
 COPY MANIFEST.in README.md requirements.txt setup.py /snapper/
 COPY snapper /snapper/snapper
 
 WORKDIR /snapper
 
-RUN pip install --upgrade pip && pip install .
+RUN python3.7 -m pip install --upgrade pip && python3.7 -m pip install .
 RUN rm -rf /snapper
 
 WORKDIR /
