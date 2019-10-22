@@ -22,7 +22,7 @@ class Task:
         self.left = len(urls)
 
         if not Task.scheduler:
-            Task.scheduler = Scheduler(workers, output_paths_format)
+            Task.scheduler = Scheduler(workers, output_paths_format, user_agent, chrome_binary, timeout)
 
     def run(self):
         if not Path(self.output_path).exists():

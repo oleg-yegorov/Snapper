@@ -11,6 +11,14 @@ env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
 
 
+worker = None
+
+
+def set_global_worker(user_agent, chrome_binary, timeout):
+    global worker
+    worker = WebDriver(user_agent, chrome_binary, timeout)
+
+
 def copy_template(task):
     css_output_path = Path(task.output_path) / "css"
     js_output_path = Path(task.output_path) / "js"
@@ -37,19 +45,18 @@ def copy_template(task):
 
 
 def host_worker(url_id, task):
-    with WebDriver(task.user_agent, task.chrome_binary, task.timeout) as web_driver:
-        filename = Path(task.output_path) / "images" / (str(uuid4()) + ".png")
+    filename = Path(task.output_path) / "images" / (str(uuid4()) + ".png")
 
-        host = task.urls[url_id]
-        if not host.startswith("https://") and not host.startswith("http://"):
-            host = "http://" + host
+    host = task.urls[url_id]
+    if not host.startswith("https://") and not host.startswith("http://"):
+        host = "http://" + host
 
-        logging.debug("Fetching %s", host)
-        if WebDriver.host_reachable(host, task.timeout) and web_driver.save_image(host, str(filename)):
-            return task.urls[url_id], str(filename)
-        else:
-            logging.debug("%s is unreachable or timed out", host)
-            return task.urls[url_id], None
+    logging.debug("Fetching %s", host)
+    if WebDriver.host_reachable(host, task.timeout) and worker.save_image(host, str(filename)):
+        return task.urls[url_id], str(filename)
+    else:
+        logging.debug("%s is unreachable or timed out", host)
+        return task.urls[url_id], None
 
 
 def finish_task(urls_to_filenames, task, output_paths_format):
