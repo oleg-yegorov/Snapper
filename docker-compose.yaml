@@ -6,7 +6,7 @@ services:
       - '8000:8000'
     volumes:
       - snapper_output:/snapper_output
-    command: --output_paths_format "http://localhost:8080{}"
+    command: --output_paths_format ${SNAPPER_FQDN}:8080{}
     init: true
 
   nginx:
