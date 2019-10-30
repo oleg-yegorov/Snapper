@@ -40,23 +40,25 @@ async def get_task(snapper_client, id):
     return await response.json()
 
 
-async def test_url_with_no_scheme(snapper_client):
-    response = await submit(snapper_client, ["ya.ru"])
+async def _test_url(snapper_client, url):
+    response = await submit(snapper_client, [url])
     task_id = response['id']
 
     await wait_for_all_tasks(snapper_client)
     response = await get_task(snapper_client, task_id)
-    task_result = response['result']
+    return response['result']
 
-    assert 'ya.ru' in task_result
+
+async def test_url_with_no_scheme(snapper_client):
+    result = await _test_url(snapper_client, "ya.ru")
+    assert "ya.ru" in result
 
 
 async def test_nonexistent_url(snapper_client):
-    response = await submit(snapper_client, ["https://ya1111.ru"])
-    task_id = response['id']
-
-    await wait_for_all_tasks(snapper_client)
-    response = await get_task(snapper_client, task_id)
-    result = response['result']
-
+    result = await _test_url(snapper_client, "https://ya1111.ru")
     assert result["https://ya1111.ru"] is None
+
+
+async def test_null_body_element(snapper_client):
+    result = await _test_url(snapper_client, "https://www.de.abbott/media-center/press-releases/05-10-2018.html")
+    assert result["https://www.de.abbott/media-center/press-releases/05-10-2018.html"] is not None
