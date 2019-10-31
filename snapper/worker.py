@@ -37,7 +37,7 @@ def copy_template(task):
 
 
 def host_worker(url_id, task):
-    with WebDriver(task.user_agent, task.chrome_binary, task.timeout) as web_driver:
+    with WebDriver(task.user_agent, task.firefox_binary, task.timeout) as web_driver:
         filename = Path(task.output_path) / "images" / (str(uuid4()) + ".png")
 
         host = task.urls[url_id]

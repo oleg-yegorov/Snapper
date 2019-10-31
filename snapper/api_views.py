@@ -23,7 +23,7 @@ class SubmitResource:
             timeout=app["timeout"],
             user_agent=app["user_agent"],
             output=app["output_dir"],
-            chrome_binary=app["chrome_binary"],
+            firefox_binary=app["firefox_binary"],
             workers=app["workers"],
             output_paths_format=app['output_paths_format'],
         )

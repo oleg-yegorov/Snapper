@@ -3,18 +3,21 @@ from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 
 
-class WebDriver(webdriver.Chrome):
-    def __init__(self, user_agent, chrome_binary, timeout):
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.headless = True
-        chrome_options.add_argument('--ignore-certificate-errors')
-        chrome_options.add_argument('--user-agent={}'.format(user_agent))
+class WebDriver(webdriver.Firefox):
+    def __init__(self, user_agent, firefox_binary, timeout):
+        firefox_profile = webdriver.FirefoxProfile()
+        firefox_profile.set_preference("general.useragent.override", user_agent)
+
+        firefox_options = webdriver.FirefoxOptions()
+        firefox_options.headless = True
+        firefox_options.accept_insecure_certs = True
 
         # arguments to run in docker container
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+        firefox_options.add_argument("--no-sandbox")
+        firefox_options.add_argument("--disable-dev-shm-usage")
 
-        super().__init__(chrome_options=chrome_options, executable_path=chrome_binary)
+        super().__init__(firefox_binary=firefox_binary, firefox_options=firefox_options,
+                         firefox_profile=firefox_profile)
         self.set_window_size(1024, 768)
         self.set_page_load_timeout(timeout)
 
