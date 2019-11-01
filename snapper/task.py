@@ -9,7 +9,7 @@ from snapper.scheduler import Scheduler
 class Task:
     scheduler = None
 
-    def __init__(self, urls, timeout, user_agent, output, chrome_binary, workers, output_paths_format):
+    def __init__(self, urls, timeout, user_agent, output, phantomjs_binary, workers, output_paths_format):
         self.urls = urls
         self.id = str(uuid4())
         self.status = "running"
@@ -18,7 +18,7 @@ class Task:
         self.output_path = Path.cwd() / output / self.id
         self.timeout = timeout
         self.user_agent = user_agent
-        self.chrome_binary = chrome_binary
+        self.phantomjs_binary = phantomjs_binary
         self.left = len(urls)
 
         if not Task.scheduler:

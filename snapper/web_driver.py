@@ -1,20 +1,18 @@
 import requests
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
-class WebDriver(webdriver.Chrome):
-    def __init__(self, user_agent, chrome_binary, timeout):
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.headless = True
-        chrome_options.add_argument('--ignore-certificate-errors')
-        chrome_options.add_argument('--user-agent={}'.format(user_agent))
+class WebDriver(webdriver.PhantomJS):
+    def __init__(self, user_agent, phantomjs_binary, timeout):
+        dcap = dict(DesiredCapabilities.PHANTOMJS)
+        dcap["phantomjs.page.settings.userAgent"] = user_agent
+        dcap["phantomjs.binary.path"] = phantomjs_binary
+        dcap["accept_untrusted_certs"] = True
 
-        # arguments to run in docker container
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        super().__init__(chrome_options=chrome_options, executable_path=chrome_binary)
+        super().__init__(service_args=['--ignore-ssl-errors=true'],
+                         desired_capabilities=dcap)
         self.set_window_size(1024, 768)
         self.set_page_load_timeout(timeout)
 
