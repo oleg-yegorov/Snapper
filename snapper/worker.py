@@ -2,9 +2,11 @@ import logging
 import os
 import shutil
 from pathlib import Path
+from shutil import copyfile
 from uuid import uuid4
 
 from jinja2 import Environment, PackageLoader
+
 from snapper.web_driver import WebDriver
 
 env = Environment(autoescape=True,
@@ -45,11 +47,18 @@ def host_worker(url_id, task):
             host = "http://" + host
 
         logging.debug("Fetching %s", host)
-        if WebDriver.host_reachable(host, task.timeout) and web_driver.save_image(host, str(filename)):
-            return task.urls[url_id], str(filename)
-        else:
+        if not WebDriver.host_reachable(host, task.timeout) or \
+                not web_driver.save_image(host, str(filename)):
             logging.debug("%s is unreachable or timed out", host)
-            return task.urls[url_id], None
+
+            try:
+                error_page_path = Path(__file__).parent / "error_pages" / "unreachable_or_timed_out.png"
+                copyfile(error_page_path, filename)
+            except IOError as e:
+                logging.error("error while coping %s to %s: %s", error_page_path, filename, str(e))
+                return task.urls[url_id], None
+
+        return task.urls[url_id], str(filename)
 
 
 def finish_task(urls_to_filenames, task, output_paths_format):

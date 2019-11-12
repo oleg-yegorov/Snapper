@@ -56,9 +56,9 @@ async def test_url_with_no_scheme(snapper_client):
 
 async def test_nonexistent_url(snapper_client):
     result = await _test_url(snapper_client, "https://ya1111.ru")
-    assert result["https://ya1111.ru"] is None
+    assert "https://ya1111.ru" in result
 
 
 async def test_null_body_element(snapper_client):
     result = await _test_url(snapper_client, "https://www.de.abbott/media-center/press-releases/05-10-2018.html")
-    assert result["https://www.de.abbott/media-center/press-releases/05-10-2018.html"] is not None
+    assert "https://www.de.abbott/media-center/press-releases/05-10-2018.html" in result
