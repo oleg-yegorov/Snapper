@@ -1,7 +1,9 @@
 import requests
+import logging
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from urllib3.exceptions import ProtocolError, MaxRetryError
 
 
 class WebDriver(webdriver.PhantomJS):
@@ -21,7 +23,7 @@ class WebDriver(webdriver.PhantomJS):
             self.get(uri)
             self.save_screenshot(file_name)
             return True
-        except TimeoutException:
+        except (WebDriverException, ProtocolError):
             return False
 
     @staticmethod
@@ -36,5 +38,9 @@ class WebDriver(webdriver.PhantomJS):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        try:
+            self.close()
+        except MaxRetryError:
+            logging.error("urllib3.exceptions.MaxRetryError while closing webdriver")
+
         self.quit()
