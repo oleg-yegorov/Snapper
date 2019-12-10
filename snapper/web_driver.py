@@ -13,12 +13,13 @@ class WebDriver(webdriver.PhantomJS):
         dcap["phantomjs.binary.path"] = phantomjs_binary
         dcap["accept_untrusted_certs"] = True
 
-        super().__init__(service_args=['--ignore-ssl-errors=true'],
+        super().__init__(service_args=['--ignore-ssl-errors=true', '--ssl-protocol=any'],
                          desired_capabilities=dcap)
         self.set_window_size(1024, 768)
         self.set_page_load_timeout(timeout)
 
     def save_image(self, uri: str, file_name: str):
+        uri = requests.utils.requote_uri(uri)
         try:
             self.get(uri)
             self.save_screenshot(file_name)
