@@ -97,14 +97,13 @@ class Task:
             return self.urls[url_id], str(filename)
 
     def create_meta_file(self):
-        meta_data = [
-            {
+        meta_data = {
+            os.path.basename(path): {
                 "url": url,
-                "filename": os.path.basename(path),
                 "created": os.path.getmtime(path)
             }
             for url, path in self.result.items()
-        ]
+        }
 
         with open(Path(self.output_path) / "images" / "meta.txt", "w") as meta_file:
             json.dump(meta_data, meta_file)
