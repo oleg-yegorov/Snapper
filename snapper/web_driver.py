@@ -30,8 +30,8 @@ class WebDriver(webdriver.PhantomJS):
     @staticmethod
     def host_reachable(host, timeout):
         try:
-            requests.get(host, timeout=timeout, verify=False)
-            return True
+            response = requests.get(host, timeout=timeout, verify=False)
+            return True if response.content else False
         except requests.exceptions.RequestException:
             return False
 
