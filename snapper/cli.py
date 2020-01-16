@@ -4,11 +4,10 @@ from pathlib import Path
 
 import urllib3
 import yaml
-from aiohttp import web
 from aiohttp.web import run_app
 from urllib3.exceptions import InsecureRequestWarning
 
-from snapper.api_views import setup_routes
+from snapper.app import create_app
 
 # disable warnings
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -73,9 +72,7 @@ def main():
     args, remaining_argv = build_parser().parse_known_args()
     setup_logger(args.log_level)
 
-    app = web.Application()
-    app.update(vars(args))
-    setup_routes(app)
+    app = create_app(args)
     run_app(app, host=args.host, port=args.port)
 
 

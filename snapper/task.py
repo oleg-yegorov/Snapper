@@ -9,17 +9,16 @@ from uuid import uuid4
 from jinja2 import Environment, PackageLoader
 
 from snapper.scheduler import Scheduler
-from snapper.web_driver import WebDriver
-
+from snapper.utility import host_reachable
+from snapper.web_driver_phantomjs import WebDriverPhantomjs
 
 env = Environment(autoescape=True,
                   loader=PackageLoader('snapper', 'templates'))
 
 
 class Task:
-    scheduler = None
-
-    def __init__(self, urls, timeout, user_agent, output, phantomjs_binary, workers, output_paths_format):
+    def __init__(self, urls, timeout, user_agent, output,
+                 phantomjs_binary, output_paths_format):
         self.urls = urls
         self.id = str(uuid4())
         self.status = "running"
@@ -33,9 +32,6 @@ class Task:
         self.output_paths_format = output_paths_format
 
         self.copy_template()
-
-        if not Task.scheduler:
-            Task.scheduler = Scheduler(workers)
 
     def copy_template(self):
         shutil.copytree(Path(__file__).parent / "templates", self.output_path)
@@ -60,7 +56,7 @@ class Task:
         self.result.update({"all": str(index_file_path)})
 
     def run(self):
-        asyncio.create_task(Task.scheduler.capture_snaps(self))
+        asyncio.create_task(Scheduler.get_instance().process_urls(self))
 
     def to_dict(self):
         result = {
@@ -71,11 +67,11 @@ class Task:
         return {
             "id": self.id,
             "status": self.status,
-            "result": result
+            "result": result,
         }
 
     def process_url(self, url_id):
-        with WebDriver(self.user_agent, self.phantomjs_binary, self.timeout) as web_driver:
+        with WebDriverPhantomjs(self.user_agent, self.phantomjs_binary, self.timeout) as web_driver:
             filename = Path(self.output_path) / "images" / (str(uuid4()) + ".png")
 
             host = self.urls[url_id]
@@ -83,7 +79,7 @@ class Task:
                 host = "http://" + host
 
             logging.debug("Fetching %s", host)
-            if not WebDriver.host_reachable(host, self.timeout) or \
+            if not host_reachable(host, self.timeout) or \
                     not web_driver.save_image(host, str(filename)):
                 logging.debug("%s is unreachable or timed out", host)
 

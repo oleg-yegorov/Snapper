@@ -5,6 +5,7 @@ from aiohttp.web_app import Application
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
 from snapper.task import Task
+from snapper.task_redirect import TaskRedirect
 
 TASKS = {}
 
@@ -24,8 +25,28 @@ class SubmitResource:
             user_agent=app["user_agent"],
             output=app["output_dir"],
             phantomjs_binary=app["phantomjs_binary"],
-            workers=app["workers"],
             output_paths_format=app['output_paths_format'],
+        )
+        TASKS[new_task.id] = new_task
+        new_task.run()
+
+        return json_response(new_task.to_dict(), status=200)
+
+
+class SubmitRedirectResource:
+    @staticmethod
+    async def post(request: Request) -> Response:
+        data = await request.json()
+        app = request.app
+
+        if "urls" not in data:
+            return json_response({"message": "'urls' not specified"}, status=400)
+
+        new_task = TaskRedirect(
+            urls=data["urls"],
+            timeout=app["timeout"],
+            user_agent=app["user_agent"],
+            chromedriver_binary=app["chromedriver_binary"],
         )
         TASKS[new_task.id] = new_task
         new_task.run()
@@ -67,6 +88,7 @@ class TaskListResource:
 
 def setup_routes(app: Application) -> None:
     app.router.add_post("/api/v1/submit", SubmitResource.post)
+    app.router.add_post("/api/v1/redirects", SubmitRedirectResource.post)
     app.router.add_get("/api/v1/tasks", TaskListResource.get)
     app.router.add_get('/api/v1/tasks/{task_id}', TaskResource.get)
     app.router.add_delete('/api/v1/tasks/{task_id}', TaskResource.delete)

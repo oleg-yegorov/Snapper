@@ -4,6 +4,7 @@ app:
   port: "8000"
 
 phantomjs_binary: "/usr/bin/phantomjs"
+chromedriver_binary: "/usr/bin/chromedriver"
 output_dir: "snapper_output"
 output_paths_format: "{}"
 timeout: 10
