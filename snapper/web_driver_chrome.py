@@ -30,18 +30,18 @@ class WebDriverChrome(webdriver.Chrome):
             self.get(uri)
 
             uri = fix_url(uri)
-            if not uri.endswith('/'):
-                uri += '/'
             redirect_chain = [uri]
 
             logs = self.get_log('performance')
             for log in logs:
                 try:
-                    message = json.loads(log['message'])['message']
-                    if message['method'] == 'Page.frameScheduledNavigation':
-                        redirect_chain.append(message['params']['url'])
-                    if message['params']['redirectResponse']['url'] == redirect_chain[-1]:
-                        redirect_chain.append(message['params']['request']['url'])
+                    log_entry = json.loads(log['message'])
+                    if log_entry['message']['method'] == 'Page.frameScheduledNavigation' and \
+                            log_entry['webview'] == log_entry['message']['params']['frameId']:
+                        redirect_chain.append(log_entry['message']['params']['url'])
+                    if log_entry['message']['params']['redirectResponse']['url'] == redirect_chain[-1] or \
+                            log_entry['message']['params']['redirectResponse']['url'][:-1] == redirect_chain[-1]:    # trailing slash may be found
+                        redirect_chain.append(log_entry['message']['params']['request']['url'])
                 except KeyError as e:
                     pass
             return redirect_chain
