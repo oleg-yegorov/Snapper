@@ -6,7 +6,11 @@ services:
       - '8000:8000'
     volumes:
       - snapper_output:/snapper_output
-    command: --output_paths_format ${SNAPPER_FQDN}:8080{}
+    command: >
+      --output_paths_format ${SNAPPER_FQDN}:8080{}
+      --aws_access_key_id ${AWS_ACCESS_KEY_ID}
+      --aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
+      --aws_bucket_name ${AWS_BUCKER_NAME}
     init: true
 
   nginx:
@@ -18,4 +22,3 @@ services:
 
 volumes:
     snapper_output:
-      external: true

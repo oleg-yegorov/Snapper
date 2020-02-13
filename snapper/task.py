@@ -1,14 +1,18 @@
 import asyncio
+import base64
+import datetime
 import json
 import logging
 import os
 import shutil
+import tempfile
 from pathlib import Path
 from uuid import uuid4
 
 from jinja2 import Environment, PackageLoader
 
 from snapper.scheduler import Scheduler
+from snapper.s3 import S3
 from snapper.utility import host_reachable
 from snapper.web_driver_phantomjs import WebDriverPhantomjs
 
@@ -104,6 +108,31 @@ class Task:
         with open(Path(self.output_path) / "images" / "meta.txt", "w") as meta_file:
             json.dump(meta_data, meta_file)
 
+    def to_s3_format(self, output_dir):
+        for url, path in self.result.items():
+            url_dir = base64.b64encode(url.encode('UTF-8')).decode('UTF-8')
+            os.mkdir(output_dir / url_dir)
+
+            screenshot_dir = Path(datetime.datetime.fromtimestamp(os.path.getmtime(path)).replace(microsecond=0).isoformat())
+            os.mkdir(output_dir / url_dir / screenshot_dir)
+            os.symlink(path, output_dir / url_dir / screenshot_dir / 'screenshot.jpg')
+
+            with open(output_dir / url_dir / screenshot_dir / 'task_id.txt', 'w') as task_id_file:
+                    task_id_file.write(self.id)
+
+    def upload_to_s3(self):
+        if not S3.get_instance():
+            return
+
+        with Path(tempfile.mkdtemp()) as task_dir:
+            self.to_s3_format(task_dir)
+
+            url_dirs = next(os.walk(task_dir))[1]
+            for url_dir in url_dirs:
+                S3.get_instance().upload_dir(task_dir / url_dir, url_dir)
+
+            shutil.rmtree(task_dir)
+
     def finish_task(self, urls_to_filenames):
         # list of list -> dict
         self.result.update({
@@ -116,3 +145,5 @@ class Task:
         self.fill_template()
 
         self.status = "ready"
+
+        self.upload_to_s3()
