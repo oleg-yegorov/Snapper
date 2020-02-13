@@ -10,10 +10,14 @@ class S3:
     _instance = None
 
     def __init__(self, aws_access_key_id, aws_secret_access_key, aws_bucker_name):
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
         self.aws_bucket_name = aws_bucker_name
-        S3._instance = self
+
+        try:
+            self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
+                                          aws_secret_access_key=aws_secret_access_key)
+            S3._instance = self
+        except ClientError as e:
+            logging.error(e.response['Error']['Message'])
 
     @staticmethod
     def get_instance():
@@ -25,9 +29,6 @@ class S3:
             return
 
         try:
-            s3_client = boto3.client('s3', aws_access_key_id=self.aws_access_key_id,
-                                 aws_secret_access_key=self.aws_secret_access_key)
-
             for root, dirs, files in os.walk(source_dir):
                 for filename in files:
                     local_path = Path(root) / filename
@@ -35,7 +36,7 @@ class S3:
                     s3_path = Path(dest_dir) / relative_path
 
                     with open(local_path, 'rb') as file_to_upload:
-                        s3_client.put_object(Bucket=self.aws_bucket_name, Key=str(s3_path),
-                                             Body=file_to_upload.read())
+                        self.s3_client.put_object(Bucket=self.aws_bucket_name, Key=str(s3_path),
+                                                  Body=file_to_upload.read())
         except ClientError as e:
             logging.error(e.response['Error']['Message'])
