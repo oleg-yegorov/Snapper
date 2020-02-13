@@ -115,7 +115,7 @@ class Task:
 
             screenshot_dir = Path(datetime.datetime.fromtimestamp(os.path.getmtime(path)).replace(microsecond=0).isoformat())
             os.mkdir(output_dir / url_dir / screenshot_dir)
-            os.symlink(path, output_dir / url_dir / screenshot_dir / 'screenshot.jpg')
+            os.symlink(path, output_dir / url_dir / screenshot_dir / 'screenshot.png')
 
             with open(output_dir / url_dir / screenshot_dir / 'task_id.txt', 'w') as task_id_file:
                     task_id_file.write(self.id)
