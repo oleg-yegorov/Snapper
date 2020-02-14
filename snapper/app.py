@@ -1,8 +1,8 @@
 from aiohttp import web
 
 from snapper.api_views import setup_routes
-from snapper.scheduler import Scheduler
 from snapper.s3 import S3
+from snapper.scheduler import Scheduler
 
 
 async def create_app(config):
