@@ -7,20 +7,19 @@ pipeline {
         PYPI_PASS       = credentials('pypi_pass')
     }
     stages {
-        stage("Build and push package to repo") {
+        stage("Clone repo") {
           when {
             branch 'master'
           }
-          stage("Clone repository") {
-              agent any
-              steps {
+          steps {
                 git(
                   credentialsId: "s-radex_ssh",
                   branch: "${GIT_BRANCH}",
                   url: "${GIT_REPOSITORY_LINK}")
-              }
+
           }
-          stage("Push ds-netcraft to PyPI repository") {
+        }
+        stage("Push ds-netcraft to PyPI repository") {
             agent {
                 docker {
                     image 'python'
@@ -42,7 +41,6 @@ pipeline {
                    rm -rf env
                 '''
             }
-          }
         }
     }
 }
