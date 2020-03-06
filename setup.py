@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+
+import pathlib
+
 import os
 import os.path
 from setuptools import find_packages
 from setuptools import setup
 
 name = 'snapper'
-version = '0.0.10'
+
+ROOT_DIR = pathlib.Path(__file__).parent
 
 
 def find_description():
@@ -23,10 +27,21 @@ def find_requires():
     return requirements
 
 
+def get_version():
+    version_file = ROOT_DIR / "KVersion"
+    with version_file.open() as ver:
+        params = (l.strip().split("=") for l in ver if l.strip())
+        semver = {
+            k.strip(): v.strip()
+            for k, v in params
+        }
+    return ".".join((semver['MAJOR'], semver['MINOR'], semver['FEATURE']))
+
+
 if __name__ == "__main__":
     setup(
         name=name,
-        version=version,
+        version=get_version(),
         description='A security tool for grabbing screenshots of many web \
                      hosts.',
         packages=find_packages(),
