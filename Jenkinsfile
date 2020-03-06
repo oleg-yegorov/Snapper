@@ -5,6 +5,7 @@ pipeline {
     environment {
         PYPI_USERNAME   = credentials('pypi_username')
         PYPI_PASS       = credentials('pypi_pass')
+        PYPI_URL        = credentials('pypi_url')
     }
     stages {
         stage("Push ds-netcraft to PyPI repository") {
