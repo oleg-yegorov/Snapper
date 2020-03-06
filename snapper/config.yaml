@@ -4,8 +4,10 @@ app:
   port: "8000"
 
 phantomjs_binary: "/usr/bin/phantomjs"
+chromedriver_binary: "/usr/bin/chromedriver"
 output_dir: "snapper_output"
+output_paths_format: "{}"
 timeout: 10
-num_workers: 1
+workers: 3
 user_agent: "Mozilla/5.0 (Windows NT6.1) AppleWebKit/537.36 (KHTML,like Gecko) \
              Chrome/41.0.2228.0 Safari/537.36"

@@ -1,14 +1,13 @@
 import argparse
 import logging
-
 from pathlib import Path
 
-import yaml
 import urllib3
-
+import yaml
+from aiohttp.web import run_app
 from urllib3.exceptions import InsecureRequestWarning
 
-from snapper import app
+from snapper.app import create_app
 
 # disable warnings
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -36,32 +35,51 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-u", '--user-agent', action='store',
                         dest="user_agent", type=str,
                         help='The user agent used for requests')
+    parser.add_argument("-f", "--output_paths_format", action="store",
+                        dest="output_paths_format", type=str,
+                        help="Format applied to output paths")
     parser.add_argument("-o", '--output', action='store',
                         dest="output_dir", type=str,
                         help='Directory for output')
     parser.add_argument("-l", '--log_level', action='store',
                         dest="log_level", type=str,
                         help='Logging facility level')
+    parser.add_argument("-w", '--workers', action='store', 
+                        dest="workers", type=int, 
+                        help='Number of cuncurrent processes')
     parser.add_argument("-t", '--timeout', action='store',
                         dest="timeout", type=int,
                         help='Number of seconds to try to resolve')
     parser.add_argument("-p", '--port', action='store',
-                        dest="port", type=int, default=defaults["app"]["port"],
+                        dest="port", type=str, default=defaults["app"]["port"],
                         help='Port to run server on')
     parser.add_argument("-H", '--host', action='store',
                         dest="host", type=str, default=defaults["app"]["host"],
                         help='Host to run server on')
     parser.add_argument("-v", action='store_true', dest="verbose",
                         help='Display console output for fetching each host')
+    parser.add_argument("--aws_access_key_id", action='store',
+                        dest='aws_access_key_id', help='AWS access key id')
+    parser.add_argument("--aws_secret_access_key", action='store',
+                        dest='aws_secret_access_key', help='AWS secret access key')
+    parser.add_argument("--aws_bucket_name", action='store',
+                        dest='aws_bucket_name', help='AWS bucket name')
     return parser
+
+
+def setup_logger(log_level):
+    try:
+        logging.basicConfig(level=log_level)
+    except ValueError:
+        raise argparse.ArgumentTypeError('Unknown log level'.format(key=log_level)) from None
 
 
 def main():
     args, remaining_argv = build_parser().parse_known_args()
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    #logging.basicConfig(level=getattr(logging, args.log_level))
-    app.config.update(vars(args))
-    app.run(host=args.host, port=args.port, debug=True)
+    setup_logger(args.log_level)
+
+    app = create_app(args)
+    run_app(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
