@@ -7,15 +7,6 @@ pipeline {
         PYPI_PASS       = credentials('pypi_pass')
     }
     stages {
-        stage("Clone repo") {
-          steps {
-                git(
-                  credentialsId: "s-radex_ssh",
-                  branch: "${GIT_BRANCH}",
-                  url: "${GIT_REPOSITORY_LINK}")
-
-          }
-        }
         stage("Push ds-netcraft to PyPI repository") {
             agent {
                 docker {
@@ -24,9 +15,7 @@ pipeline {
                 }
             }
             when {
-                not {
-                    branch 'master'
-                }
+                branch 'master'
             }
             steps {
                 sh '''
