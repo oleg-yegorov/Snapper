@@ -8,9 +8,6 @@ pipeline {
     }
     stages {
         stage("Clone repo") {
-          when {
-            branch 'master'
-          }
           steps {
                 git(
                   credentialsId: "s-radex_ssh",
@@ -24,6 +21,11 @@ pipeline {
                 docker {
                     image 'python'
                     args '-e ${PYPI_USERNAME}=${PYPI_USERNAME}'
+                }
+            }
+            when {
+                not {
+                    branch 'master'
                 }
             }
             steps {
