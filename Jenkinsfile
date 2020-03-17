@@ -8,6 +8,16 @@ pipeline {
         PYPI_URL        = credentials('pypi_url')
     }
     stages {
+    	stage("Test version bump") {
+            when {
+                not {
+                    branch 'master'
+                }
+            }
+            steps {
+                bump_feature_kversion
+            }
+	    }
         stage("Push ds-netcraft to PyPI repository") {
             agent {
                 docker {
