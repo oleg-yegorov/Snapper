@@ -1,4 +1,3 @@
 @Library('powerpony') _
 
 buildPythonPackage()
-
