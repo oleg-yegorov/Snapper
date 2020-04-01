@@ -17,7 +17,7 @@ RUN apt install -y chromium-chromedriver
 # install python
 RUN apt-get install -y python3.8 python3-pip
 
-COPY MANIFEST.in README.md requirements.txt setup.py /snapper/
+COPY MANIFEST.in README.md requirements.txt setup.py KVersion /snapper/
 COPY snapper /snapper/snapper
 
 WORKDIR /snapper
