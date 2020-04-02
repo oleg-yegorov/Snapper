@@ -3,7 +3,6 @@ A security tool for grabbing screenshots of many web hosts. This tool is useful 
 
 ## How to install 
 
-
 - PyPl package
 ```bash
 pip install snapper
