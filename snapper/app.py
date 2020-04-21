@@ -22,5 +22,6 @@ async def on_startup(app):
     if all([app['aws_access_key_id'], app['aws_secret_access_key'], app['aws_bucket_name']]):
         S3(app['aws_access_key_id'], app['aws_secret_access_key'], app['aws_bucket_name'])
 
+
 async def on_shutdown(app):
     Scheduler.get_instance().close()

@@ -38,6 +38,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-f", "--output_paths_format", action="store",
                         dest="output_paths_format", type=str,
                         help="Format applied to output paths")
+    parser.add_argument("-tt", "--task_timeout_sec", action="store",
+                        dest="task_timeout_sec", type=int,
+                        help="Format applied to output paths")
     parser.add_argument("-o", '--output', action='store',
                         dest="output_dir", type=str,
                         help='Directory for output')

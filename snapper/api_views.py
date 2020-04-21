@@ -27,6 +27,7 @@ class SubmitResource:
             output=app["output_dir"],
             phantomjs_binary=app["phantomjs_binary"],
             output_paths_format=app['output_paths_format'],
+            task_timeout_sec=app['task_timeout_sec'],
         )
         TASKS[new_task.id] = new_task
         new_task.run()
@@ -67,6 +68,7 @@ class HistoryResource:
             urls=data['urls'],
             output=app['output_dir'],
             output_paths_format=app['output_paths_format'],
+            task_timeout_sec=app['task_timeout_sec'],
         )
         TASKS[new_task.id] = new_task
         new_task.run()

@@ -22,11 +22,12 @@ env = Environment(autoescape=True,
 
 class Task:
     def __init__(self, urls, timeout, user_agent, output,
-                 phantomjs_binary, output_paths_format):
+                 phantomjs_binary, output_paths_format, task_timeout_sec):
         self.urls = urls
         self.id = str(uuid4())
         self.status = "running"
         self.result = {}
+        self.task_timeout_sec = task_timeout_sec
 
         self.output_path = Path.cwd() / output / self.id
         self.timeout = timeout
@@ -61,6 +62,7 @@ class Task:
 
     def run(self):
         asyncio.create_task(Scheduler.get_instance().process_urls(self))
+        asyncio.create_task(self.delete_task())
 
     def to_dict(self):
         result = {
@@ -147,3 +149,11 @@ class Task:
         self.status = "ready"
 
         self.upload_to_s3()
+
+    async def delete_task(self):
+        await asyncio.sleep(self.task_timeout_sec)
+
+        self.status = "deleted"
+        self.result = {}
+
+        shutil.rmtree(self.output_path)

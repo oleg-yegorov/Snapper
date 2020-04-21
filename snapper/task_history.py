@@ -12,19 +12,16 @@ from snapper.s3 import S3
 
 
 class TaskHistory:
-    tasks = {}
-
-    def __init__(self, urls, output, output_paths_format, task_lifetime_sec=86400):
+    def __init__(self, urls, output, output_paths_format, task_timeout_sec):
         self.urls = urls
         self.id = str(uuid4())
         self.result = {url: {} for url in urls }
         self.status = "running"
         self.output_path = Path.cwd() / output / self.id
         self.output_paths_format = output_paths_format
-        self.task_lifetime_sec = task_lifetime_sec
+        self.task_timeout_sec = task_timeout_sec
 
         os.makedirs(self.output_path)
-        TaskHistory.tasks[self.id] = self
 
     def to_dict(self):
         result = {
@@ -75,7 +72,9 @@ class TaskHistory:
             self.status = 'ready'
 
     async def delete_task(self):
-        await asyncio.sleep(self.task_lifetime_sec)
+        await asyncio.sleep(self.task_timeout_sec)
+
+        self.status = "deleted"
+        self.result = {}
 
         shutil.rmtree(self.output_path)
-        del TaskHistory.tasks[self.id]
