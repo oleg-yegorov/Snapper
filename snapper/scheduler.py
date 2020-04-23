@@ -1,17 +1,14 @@
+import asyncio
 import logging
-from multiprocessing.pool import Pool
+from concurrent.futures import ProcessPoolExecutor
 
 
-class Scheduler(Pool):
+class Scheduler(ProcessPoolExecutor):
     _instance = None
 
     def __init__(self, workers):
-        super().__init__(workers)
+        super().__init__(max_workers=workers)
         Scheduler._instance = self
-
-    def close(self):
-        super().close()
-        self.join()
 
     @staticmethod
     def get_instance():
@@ -21,4 +18,8 @@ class Scheduler(Pool):
         return Scheduler._instance
 
     async def process_urls(self, task):
-        self.map_async(task.process_url, range(len(task.urls)), callback=task.finish_task)
+        loop = asyncio.get_event_loop()
+        futures = [loop.run_in_executor(self, task.process_url, url_id)
+                   for url_id in range(len(task.urls))]
+        result = await asyncio.gather(*futures)
+        await task.finish_task(result)

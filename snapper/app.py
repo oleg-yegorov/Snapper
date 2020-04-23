@@ -24,4 +24,4 @@ async def on_startup(app):
 
 
 async def on_shutdown(app):
-    Scheduler.get_instance().close()
+    pass

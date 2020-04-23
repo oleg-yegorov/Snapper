@@ -49,6 +49,7 @@ class SubmitRedirectResource:
             timeout=app["timeout"],
             user_agent=app["user_agent"],
             chromedriver_binary=app["chromedriver_binary"],
+            task_timeout_sec=app['task_timeout_sec'],
         )
         TASKS[new_task.id] = new_task
         new_task.run()

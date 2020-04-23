@@ -11,8 +11,8 @@ from uuid import uuid4
 
 from jinja2 import Environment, PackageLoader
 
-from snapper.scheduler import Scheduler
 from snapper.s3 import S3
+from snapper.scheduler import Scheduler
 from snapper.utility import host_reachable
 from snapper.web_driver_phantomjs import WebDriverPhantomjs
 
@@ -61,8 +61,8 @@ class Task:
         self.result.update({"all": str(index_file_path)})
 
     def run(self):
-        asyncio.create_task(Scheduler.get_instance().process_urls(self))
-        asyncio.create_task(self.delete_task())
+        process_urls_task = asyncio.create_task(Scheduler.get_instance().process_urls(self))
+        asyncio.create_task(self.delete_task(process_urls_task))
 
     def to_dict(self):
         result = {
@@ -122,20 +122,21 @@ class Task:
             with open(output_dir / url_dir / screenshot_dir / 'task_id.txt', 'w') as task_id_file:
                     task_id_file.write(self.id)
 
-    def upload_to_s3(self):
+    async def upload_to_s3(self):
         if not S3.get_instance():
             return
 
-        with Path(tempfile.mkdtemp()) as task_dir:
-            self.to_s3_format(task_dir)
+        async with S3.get_instance().get_async_client() as s3_client:
+            with Path(tempfile.mkdtemp()) as task_dir:
+                self.to_s3_format(task_dir)
 
-            url_dirs = next(os.walk(task_dir))[1]
-            for url_dir in url_dirs:
-                S3.get_instance().upload_dir(task_dir / url_dir, url_dir)
+                url_dirs = next(os.walk(task_dir))[1]
+                for url_dir in url_dirs:
+                    await S3.get_instance().upload_dir(s3_client, task_dir / url_dir, url_dir)
 
-            shutil.rmtree(task_dir)
+                shutil.rmtree(task_dir)
 
-    def finish_task(self, urls_to_filenames):
+    async def finish_task(self, urls_to_filenames):
         # list of list -> dict
         self.result.update({
             url: filename
@@ -148,10 +149,11 @@ class Task:
 
         self.status = "ready"
 
-        self.upload_to_s3()
+        await self.upload_to_s3()
 
-    async def delete_task(self):
-        await asyncio.sleep(self.task_timeout_sec)
+    async def delete_task(self, process_urls_task):
+        sleep_task = asyncio.sleep(self.task_timeout_sec)
+        await asyncio.wait([sleep_task, process_urls_task], return_when=asyncio.ALL_COMPLETED)
 
         self.status = "deleted"
         self.result = {}

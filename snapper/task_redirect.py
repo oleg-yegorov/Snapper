@@ -8,7 +8,8 @@ from snapper.web_driver_chrome import WebDriverChrome
 
 
 class TaskRedirect:
-    def __init__(self, urls, timeout, user_agent, chromedriver_binary):
+    def __init__(self, urls, timeout, user_agent, chromedriver_binary,
+                 task_timeout_sec):
         self.urls = urls
         self.id = str(uuid4())
         self.status = "running"
@@ -18,9 +19,11 @@ class TaskRedirect:
         self.user_agent = user_agent
         self.chromedriver_binary = chromedriver_binary
         self.left = len(urls)
+        self.task_timeout_sec = task_timeout_sec
 
     def run(self):
-        asyncio.create_task(Scheduler.get_instance().process_urls(self))
+        process_urls_task = asyncio.create_task(Scheduler.get_instance().process_urls(self))
+        asyncio.create_task(self.delete_task(process_urls_task))
 
     def to_dict(self):
         return {
@@ -44,10 +47,17 @@ class TaskRedirect:
 
             return self.urls[url_id], redirect_chain
 
-    def finish_task(self, urls_to_redirects):
+    async def finish_task(self, urls_to_redirects):
         self.result.update({
             url: redirect_chain
             for url, redirect_chain in urls_to_redirects
         })
 
         self.status = "ready"
+
+    async def delete_task(self, process_urls_task):
+        sleep_task = asyncio.sleep(self.task_timeout_sec)
+        await asyncio.wait([sleep_task, process_urls_task], return_when=asyncio.ALL_COMPLETED)
+
+        self.status = "deleted"
+        self.result = {}

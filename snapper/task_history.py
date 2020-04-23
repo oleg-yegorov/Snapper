@@ -39,8 +39,8 @@ class TaskHistory:
         }
 
     def run(self):
-        asyncio.create_task(self.process_urls())
-        asyncio.create_task(self.delete_task())
+        process_urls_task = asyncio.create_task(self.process_urls())
+        asyncio.create_task(self.delete_task(process_urls_task))
 
     async def process_urls(self):
         if not S3.get_instance():
@@ -71,8 +71,9 @@ class TaskHistory:
 
             self.status = 'ready'
 
-    async def delete_task(self):
-        await asyncio.sleep(self.task_timeout_sec)
+    async def delete_task(self, process_urls_task):
+        sleep_task = asyncio.sleep(self.task_timeout_sec)
+        await asyncio.wait([sleep_task, process_urls_task], return_when=asyncio.ALL_COMPLETED)
 
         self.status = "deleted"
         self.result = {}
