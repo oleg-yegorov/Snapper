@@ -1,4 +1,3 @@
-import asyncio
 import base64
 import datetime
 import logging
@@ -9,9 +8,10 @@ from pathlib import Path
 from uuid import uuid4
 
 from snapper.s3 import S3
+from snapper.task import Task
 
 
-class TaskHistory:
+class TaskHistory(Task):
     def __init__(self, urls, output, output_paths_format, task_timeout_sec):
         self.urls = urls
         self.id = str(uuid4())
@@ -37,10 +37,6 @@ class TaskHistory:
             "status": self.status,
             "result": result
         }
-
-    def run(self):
-        process_urls_task = asyncio.create_task(self.process_urls())
-        asyncio.create_task(self.delete_task(process_urls_task))
 
     async def process_urls(self):
         if not S3.get_instance():
@@ -71,11 +67,5 @@ class TaskHistory:
 
             self.status = 'ready'
 
-    async def delete_task(self, process_urls_task):
-        sleep_task = asyncio.sleep(self.task_timeout_sec)
-        await asyncio.wait([sleep_task, process_urls_task], return_when=asyncio.ALL_COMPLETED)
-
-        self.status = "deleted"
-        self.result = {}
-
+    async def cleanup(self):
         shutil.rmtree(self.output_path)

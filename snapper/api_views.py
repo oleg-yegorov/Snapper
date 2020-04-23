@@ -1,12 +1,14 @@
-from typing import List, Optional
+from typing import Optional
 
 from aiohttp.web import json_response
 from aiohttp.web_app import Application
 from aiohttp.web_request import Request
 from aiohttp.web_response import Response
+
 from snapper.task import Task
-from snapper.task_redirect import TaskRedirect
 from snapper.task_history import TaskHistory
+from snapper.task_redirect import TaskRedirect
+from snapper.task_snapper import TaskSnapper
 
 TASKS = {}
 
@@ -20,7 +22,7 @@ class SubmitResource:
         if "urls" not in data:
             return json_response({"message": "'urls' not specified"}, status=400)
 
-        new_task = Task(
+        new_task = TaskSnapper(
             urls=data["urls"],
             timeout=app["timeout"],
             user_agent=app["user_agent"],
@@ -83,8 +85,6 @@ class TaskResource:
 
     @staticmethod
     def delete_task(task_id: str):
-        # Let's keep files on disk for now
-        # shutil.rmtree(TASKS[task_id].output_path)
         del TASKS[task_id]
 
     @staticmethod
