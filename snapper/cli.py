@@ -61,10 +61,6 @@ def build_parser() -> argparse.ArgumentParser:
                         help='Host to run server on')
     parser.add_argument("-v", action='store_true', dest="verbose",
                         help='Display console output for fetching each host')
-    parser.add_argument("--aws_access_key_id", action='store',
-                        dest='aws_access_key_id', help='AWS access key id')
-    parser.add_argument("--aws_secret_access_key", action='store',
-                        dest='aws_secret_access_key', help='AWS secret access key')
     parser.add_argument("--aws_bucket_name", action='store',
                         dest='aws_bucket_name', help='AWS bucket name')
     return parser
