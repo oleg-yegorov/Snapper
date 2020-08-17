@@ -26,7 +26,9 @@ class WebDriverPhantomjs(webdriver.PhantomJS):
             self.get(uri)
             self.save_screenshot(file_name)
             return not image_transparent(file_name)
-        except (WebDriverException, ProtocolError):
+        except (WebDriverException, ProtocolError, MaxRetryError):
+            return False
+        except Exception as e:
             return False
 
     def __enter__(self):
