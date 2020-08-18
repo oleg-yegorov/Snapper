@@ -39,5 +39,10 @@ class WebDriverPhantomjs(webdriver.PhantomJS):
             self.close()
         except MaxRetryError:
             logging.error("urllib3.exceptions.MaxRetryError while closing webdriver")
+        except Exception as e:
+            logging.error("Error while closing webdriver")
 
-        self.quit()
+        try:
+            self.quit()
+        except Exception as e:
+            logging.error("Error while closing webdriver")
