@@ -1,3 +1,5 @@
+import os
+
 from aiohttp import web
 
 from snapper.api_views import setup_routes
@@ -19,8 +21,9 @@ async def create_app(config):
 async def on_startup(app):
     Scheduler(app['workers'])
 
-    if all([app['aws_access_key_id'], app['aws_secret_access_key'], app['aws_bucket_name']]):
-        S3(app['aws_access_key_id'], app['aws_secret_access_key'], app['aws_bucket_name'])
+    if all([os.getenv('AWS_ACCESS_KEY_ID'), os.getenv('AWS_SECRET_ACCESS_KEY'), app['aws_bucket_name']]):
+        S3(os.getenv('AWS_ACCESS_KEY_ID'), os.getenv('AWS_SECRET_ACCESS_KEY'), app['aws_bucket_name'])
+
 
 async def on_shutdown(app):
-    Scheduler.get_instance().close()
+    pass

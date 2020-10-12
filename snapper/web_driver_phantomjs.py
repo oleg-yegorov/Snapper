@@ -26,7 +26,9 @@ class WebDriverPhantomjs(webdriver.PhantomJS):
             self.get(uri)
             self.save_screenshot(file_name)
             return not image_transparent(file_name)
-        except (WebDriverException, ProtocolError):
+        except (WebDriverException, ProtocolError, MaxRetryError):
+            return False
+        except Exception as e:
             return False
 
     def __enter__(self):
@@ -37,5 +39,10 @@ class WebDriverPhantomjs(webdriver.PhantomJS):
             self.close()
         except MaxRetryError:
             logging.error("urllib3.exceptions.MaxRetryError while closing webdriver")
+        except Exception as e:
+            logging.error("Error while closing webdriver")
 
-        self.quit()
+        try:
+            self.quit()
+        except Exception as e:
+            logging.error("Error while closing webdriver")

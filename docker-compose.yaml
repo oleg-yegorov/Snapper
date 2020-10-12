@@ -7,11 +7,12 @@ services:
     volumes:
       - snapper_output:/snapper_output
     command: >
-      --output_paths_format ${SNAPPER_FQDN}:8080{}
-      --aws_access_key_id ${AWS_ACCESS_KEY_ID}
-      --aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
-      --aws_bucket_name ${AWS_BUCKER_NAME}
+      --output_paths_format ${SNAPPER_FQDN_WITH_SCHEME}:8080{}
+      --aws_bucket_name ${AWS_BUCKET_NAME}
     init: true
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
 
   nginx:
     image: 'nginx:latest'

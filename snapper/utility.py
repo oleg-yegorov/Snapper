@@ -1,16 +1,19 @@
 import logging
+from urllib.parse import urlsplit, quote, unquote, urlunsplit
 
 import numpy
 import requests
-from urllib.parse import urlsplit, quote, unquote, urlunsplit
 from PIL import Image, UnidentifiedImageError
+from urllib3.exceptions import MaxRetryError
 
 
 def host_reachable(host, timeout):
     try:
         response = requests.get(host, timeout=timeout, verify=False)
         return True if response.content else False
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, MaxRetryError):
+        return False
+    except Exception as e:
         return False
 
 

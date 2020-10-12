@@ -38,6 +38,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-f", "--output_paths_format", action="store",
                         dest="output_paths_format", type=str,
                         help="Format applied to output paths")
+    parser.add_argument("-tt", "--task_timeout_sec", action="store",
+                        dest="task_timeout_sec", type=int,
+                        help="Format applied to output paths")
     parser.add_argument("-o", '--output', action='store',
                         dest="output_dir", type=str,
                         help='Directory for output')
@@ -58,10 +61,6 @@ def build_parser() -> argparse.ArgumentParser:
                         help='Host to run server on')
     parser.add_argument("-v", action='store_true', dest="verbose",
                         help='Display console output for fetching each host')
-    parser.add_argument("--aws_access_key_id", action='store',
-                        dest='aws_access_key_id', help='AWS access key id')
-    parser.add_argument("--aws_secret_access_key", action='store',
-                        dest='aws_secret_access_key', help='AWS secret access key')
     parser.add_argument("--aws_bucket_name", action='store',
                         dest='aws_bucket_name', help='AWS bucket name')
     return parser

@@ -1,14 +1,15 @@
-import asyncio
 import logging
 from uuid import uuid4
 
 from snapper.scheduler import Scheduler
+from snapper.task import Task
 from snapper.utility import host_reachable
 from snapper.web_driver_chrome import WebDriverChrome
 
 
-class TaskRedirect:
-    def __init__(self, urls, timeout, user_agent, chromedriver_binary):
+class TaskRedirect(Task):
+    def __init__(self, urls, timeout, user_agent, chromedriver_binary,
+                 task_timeout_sec):
         self.urls = urls
         self.id = str(uuid4())
         self.status = "running"
@@ -17,10 +18,10 @@ class TaskRedirect:
         self.timeout = timeout
         self.user_agent = user_agent
         self.chromedriver_binary = chromedriver_binary
-        self.left = len(urls)
+        self.task_timeout_sec = task_timeout_sec
 
-    def run(self):
-        asyncio.create_task(Scheduler.get_instance().process_urls(self))
+    async def process_urls(self):
+        await Scheduler.get_instance().process_urls(self)
 
     def to_dict(self):
         return {
@@ -44,7 +45,7 @@ class TaskRedirect:
 
             return self.urls[url_id], redirect_chain
 
-    def finish_task(self, urls_to_redirects):
+    async def finish_task(self, urls_to_redirects):
         self.result.update({
             url: redirect_chain
             for url, redirect_chain in urls_to_redirects

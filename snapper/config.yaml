@@ -1,8 +1,9 @@
-log_level: DEBUG
+log_level: WARNING
 app:
   host: "0.0.0.0"
   port: "8000"
 
+task_timeout_sec: 86400
 phantomjs_binary: "/usr/bin/phantomjs"
 chromedriver_binary: "/usr/bin/chromedriver"
 output_dir: "snapper_output"
